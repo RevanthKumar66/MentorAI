@@ -69,6 +69,7 @@ body {
 .gemini-sparkle {
   background: linear-gradient(45deg, #4285F4, #9B72CB, #D96570, #F3AF42);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
   animation: morphRotate 2.2s infinite ease-in-out;
