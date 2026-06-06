@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1f1f1f;
+  
+  /* Color Palette - Premium Light Theme */
+  --bg-main: #ffffff;
+  --bg-sidebar: #f9f9f8;
+  --bg-bubble-user: #ffffff;
+  --bg-bubble-assistant: #f7f6f3;
+  --bg-cream-accent: #fcfbf9;
+  --bg-card: #ffffff;
+  --bg-badge: #f4f3f0;
+  
+  --text-primary: #1f1f1f;
+  --text-secondary: #5f5f5f;
+  --text-tertiary: #8f8f8f;
+  
+  --border-primary: #e5e5e5;
+  --border-secondary: #eef0eb;
+  --border-accent: #e2e8f0;
+  
+  /* Font Families matching premium ChatGPT style */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+/* Base resets & typography */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom minimal scrollbar utility to avoid heavy browser defaults */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* Gemini sparkle micro-interaction animations */
+.gemini-sparkle {
+  background: linear-gradient(45deg, #4285F4, #9B72CB, #D96570, #F3AF42);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  animation: morphRotate 2.2s infinite ease-in-out;
+}
+
+.generating-text {
+  color: #5f5f5f;
+  margin-left: 6px;
+  animation: textPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes morphRotate {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes textPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+/* Streaming blinking cursor */
+.streaming-content > *:last-child::after {
+  content: '▊';
+  display: inline-block;
+  margin-left: 4px;
+  color: #1f1f1f;
+  vertical-align: middle;
+  animation: cursorBlink 0.8s steps(2, start) infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+

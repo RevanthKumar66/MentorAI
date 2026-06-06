@@ -1,0 +1,26 @@
+FROM node:20-alpine AS base
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
+
+WORKDIR /app
+
+# Copy root monorepo package and workspaces spec
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml /app/
+COPY apps/web/package.json /app/apps/web/
+COPY packages/ /app/packages/
+
+# Install workspace dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy application source code
+COPY apps/web/ /app/apps/web/
+
+WORKDIR /app/apps/web
+
+# Build Next.js app
+RUN pnpm build
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"]

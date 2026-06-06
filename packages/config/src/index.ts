@@ -1,0 +1,12 @@
+// Shared Configurations configuration presets for MentorAI OS
+export const TSCONFIG_BASE = {
+  compilerOptions: {
+    target: "es2022",
+    module: "commonjs",
+    lib: ["es2022", "dom"],
+    strict: true,
+    esModuleInterop: true,
+    skipLibCheck: true,
+    forceConsistentCasingInFileNames: true
+  }
+};
