@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Copy, Check, Pencil, ThumbsUp, ThumbsDown, Send } from 'lucide-react';
 import { ChatMessage as ChatMessageType } from '../store/chat-store';
 import { MermaidRenderer } from './mermaid-renderer';
@@ -255,6 +256,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEditMessage
           message.id === 'streaming-assistant' ? 'streaming-content' : ''
         }`}>
           <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
             components={{
               p: ({ children }) => <p className="mb-3.5 last:mb-0 text-[#1f1f1f]">{children}</p>,
               ul: ({ children }) => <ul className="list-disc pl-5 mb-3.5 space-y-1 text-slate-700">{children}</ul>,
