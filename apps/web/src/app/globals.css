@@ -74,10 +74,67 @@ body {
   animation: morphRotate 2.2s infinite ease-in-out;
 }
 
-.rotate-generating {
-  display: inline-block;
-  animation: morphRotate 2.2s infinite ease-in-out;
+/* Uiverse.io star preloader - black and grey color combination */
+.preloader {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.crack {
+  position: absolute;
+  width: 20%;
+  aspect-ratio: 1;
+  background-color: #0f172a; /* almost black */
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  animation: rotate-loader 6s linear infinite;
+  transform-origin: center;
+}
+
+.crack2 {
+  width: 40%;
+  background-color: #475569; /* dark grey */
+  animation-delay: 1s;
+}
+
+.crack3 {
+  width: 60%;
+  background-color: #94a3b8; /* medium grey */
+  animation-delay: 1.5s;
+}
+
+.crack4 {
+  width: 80%;
+  background-color: #cbd5e1; /* light grey */
+  animation-delay: 2s;
+}
+
+.crack5 {
+  width: 100%;
+  background-color: #f1f5f9; /* very light grey */
+  animation-delay: 2.5s;
+}
+
+@keyframes rotate-loader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 
 .generating-text {
   color: #5f5f5f;

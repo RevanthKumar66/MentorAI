@@ -269,13 +269,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 {/* Generating... UI */}
                 <div className="flex-1 flex items-center">
                   <div className="flex items-center">
-                    <Image
-                      src="/mentorai-symbol-only.svg"
-                      alt="Generating"
-                      width={14}
-                      height={14}
-                      className="rotate-generating select-none shrink-0"
-                    />
+                    <div className="preloader select-none shrink-0">
+                      <div className="crack crack5"></div>
+                      <div className="crack crack4"></div>
+                      <div className="crack crack3"></div>
+                      <div className="crack crack2"></div>
+                      <div className="crack"></div>
+                    </div>
                     <span className="generating-text text-xs font-semibold select-none">Generating...</span>
                   </div>
                 </div>
