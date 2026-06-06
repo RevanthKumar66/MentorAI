@@ -269,7 +269,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 {/* Generating... UI */}
                 <div className="flex-1 flex items-center">
                   <div className="flex items-center">
-                    <span className="gemini-sparkle text-sm leading-none select-none">✦</span>
+                    <Image
+                      src="/mentorai-symbol-only.svg"
+                      alt="Generating"
+                      width={14}
+                      height={14}
+                      className="rotate-generating select-none shrink-0"
+                    />
                     <span className="generating-text text-xs font-semibold select-none">Generating...</span>
                   </div>
                 </div>

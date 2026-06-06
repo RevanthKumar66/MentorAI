@@ -74,6 +74,11 @@ body {
   animation: morphRotate 2.2s infinite ease-in-out;
 }
 
+.rotate-generating {
+  display: inline-block;
+  animation: morphRotate 2.2s infinite ease-in-out;
+}
+
 .generating-text {
   color: #5f5f5f;
   margin-left: 6px;
@@ -91,19 +96,12 @@ body {
   50% { opacity: 1; }
 }
 
-/* Streaming blinking cursor */
+
+/* Streaming blinking cursor hidden */
 .streaming-content > *:last-child::after {
-  content: '▊';
+  content: '';
   display: inline-block;
-  margin-left: 4px;
-  color: #1f1f1f;
-  vertical-align: middle;
-  animation: cursorBlink 0.8s steps(2, start) infinite;
 }
 
-@keyframes cursorBlink {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
-}
 
 

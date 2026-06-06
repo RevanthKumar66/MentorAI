@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { Copy, Check, Pencil, ThumbsUp, ThumbsDown, Send } from 'lucide-react';
@@ -31,6 +31,64 @@ const parseMessageContent = (content: string) => {
     return { mainContent, suggestions };
   }
   return { mainContent: content, suggestions: [] };
+};
+
+// Hook to type out content smoothly when streaming
+const useTypingEffect = (content: string, isStreaming: boolean, speed: number = 8) => {
+  const [displayedContent, setDisplayedContent] = useState('');
+  const currentContentRef = useRef('');
+  const targetContentRef = useRef(content);
+
+  useEffect(() => {
+    targetContentRef.current = content;
+  }, [content]);
+
+  useEffect(() => {
+    if (!isStreaming) {
+      setDisplayedContent(content);
+      currentContentRef.current = content;
+      return;
+    }
+
+    let timer: NodeJS.Timeout | null = null;
+
+    const typeNext = () => {
+      const current = currentContentRef.current;
+      const target = targetContentRef.current;
+
+      if (current === target) {
+        return;
+      }
+
+      if (!target.startsWith(current)) {
+        // Reset or jump if the target string has changed shape completely
+        setDisplayedContent(target);
+        currentContentRef.current = target;
+        return;
+      }
+
+      // Append characters with lag catchup
+      const diff = target.length - current.length;
+      let charsToAppend = 1;
+      if (diff > 50) charsToAppend = 3;
+      if (diff > 150) charsToAppend = 10;
+      if (diff > 300) charsToAppend = diff;
+
+      const nextContent = current + target.substring(current.length, current.length + charsToAppend);
+      setDisplayedContent(nextContent);
+      currentContentRef.current = nextContent;
+
+      timer = setTimeout(typeNext, speed);
+    };
+
+    typeNext();
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [content, isStreaming, speed]);
+
+  return displayedContent;
 };
 
 interface CodeBlockProps extends React.HTMLAttributes<HTMLElement> {
@@ -100,6 +158,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEditMessage
   };
 
   const { mainContent, suggestions } = parseMessageContent(message.content);
+  const isStreaming = message.id === 'streaming-assistant';
+  const typedMainContent = useTypingEffect(mainContent, isStreaming);
 
   if (!isAssistant) {
     // User message: Aligned to the right, rounded grey bubble
@@ -277,7 +337,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEditMessage
               ),
             }}
           >
-            {mainContent}
+            {typedMainContent}
           </ReactMarkdown>
         </div>
 
@@ -311,7 +371,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEditMessage
         {/* Suggestion Chips */}
         {isAssistant && suggestions.length > 0 && (
           <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-slate-100 select-none">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Suggested follow-ups</span>
+            <span className="text-[10px] font-medium text-slate-400 tracking-wide">Suggested Follow-ups</span>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((suggestion, index) => (
                 <button
