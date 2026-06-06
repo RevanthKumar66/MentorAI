@@ -269,7 +269,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 {/* Generating... UI */}
                 <div className="flex-1 flex items-center">
                   <div className="flex items-center">
-                    <div className="preloader select-none shrink-0">
+                    <div className="preloader w-5 h-5 select-none shrink-0">
                       <div className="crack crack5"></div>
                       <div className="crack crack4"></div>
                       <div className="crack crack3"></div>
