@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { MessageSquare, Plus, Trash2, PanelLeftClose, PanelLeft, FolderOpen, Settings } from 'lucide-react';
+import { MessageSquare, Plus, Trash2, PanelLeftClose, PanelLeft, FolderOpen, Settings, Search } from 'lucide-react';
 import { ChatSession, useChatStore } from '../store/chat-store';
 import Link from 'next/link';
 
@@ -24,6 +24,13 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onDeleteSession,
 }) => {
   const { sidebarOpen, setSidebarOpen } = useChatStore();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSessions = sessions.filter((session) =>
+    (session.title || 'New Conversation')
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
 
   // ── Collapsed sidebar: show icon rail only ──────────────────────────
   if (!sidebarOpen) {
@@ -116,6 +123,18 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           <FolderOpen className="w-3.5 h-3.5 text-slate-400" />
           Document Explorer
         </Link>
+        
+        {/* Search Bar */}
+        <div className="relative pt-1">
+          <Search className="absolute left-2.5 top-3.5 h-3.5 w-3.5 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search chats..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200/70 rounded-[6px] text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:ring-1 focus:ring-slate-300/20 transition-all"
+          />
+        </div>
       </div>
 
 
@@ -128,12 +147,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           <div className="flex flex-col items-center justify-center pt-8 text-slate-400">
             <span className="text-[10px] animate-pulse">Loading sessions...</span>
           </div>
-        ) : sessions.length === 0 ? (
+        ) : filteredSessions.length === 0 ? (
           <div className="text-center text-[10px] text-slate-400 pt-8 px-4">
-            No active conversations.
+            {searchQuery ? 'No matching conversations.' : 'No active conversations.'}
           </div>
         ) : (
-          sessions.map((session) => {
+          filteredSessions.map((session) => {
             const isActive = session.id === activeSessionId;
             return (
               <div
