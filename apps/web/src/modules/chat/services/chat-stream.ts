@@ -6,12 +6,14 @@ export interface StreamCallbacks {
   onChunk: (text: string) => void;
   onTitle?: (title: string) => void;
   onError?: (error: string) => void;
+  onCitations?: (citations: any[]) => void;
 }
 
 export async function streamChatResponse(
   sessionId: string,
   content: string,
-  callbacks: StreamCallbacks
+  callbacks: StreamCallbacks,
+  isRetry?: boolean
 ): Promise<void> {
   const { data: authData } = await supabase.auth.getSession();
   const token = authData.session?.access_token;
@@ -22,7 +24,7 @@ export async function streamChatResponse(
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({ content, is_retry: isRetry }),
   });
 
   if (!response.ok) {
@@ -71,6 +73,8 @@ export async function streamChatResponse(
               callbacks.onChunk(parsed.chunk);
             } else if (parsed.title !== undefined) {
               callbacks.onTitle?.(parsed.title);
+            } else if (parsed.citations !== undefined) {
+              callbacks.onCitations?.(parsed.citations);
             }
           } catch (e) {
             console.error('Error parsing SSE line:', cleanedLine, e);
@@ -82,3 +86,4 @@ export async function streamChatResponse(
     reader.releaseLock();
   }
 }
+

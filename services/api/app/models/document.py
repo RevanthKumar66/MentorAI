@@ -107,6 +107,20 @@ class Document(BaseModel):
         "Document",
         back_populates="parent"
     )
+    collections: Mapped[List["Collection"]] = relationship(
+        "Collection",
+        secondary="collection_documents",
+        back_populates="documents"
+    )
+    chunks: Mapped[List["DocumentChunk"]] = relationship(
+        "DocumentChunk",
+        back_populates="document",
+        cascade="all, delete-orphan"
+    )
 
 from app.models.user import User
+from app.models.collection import Collection, collection_documents
+from app.models.document_chunk import DocumentChunk
 Document.user = relationship("User", back_populates="documents")
+Document.collections = relationship("Collection", secondary=collection_documents, back_populates="documents")
+Document.chunks = relationship("DocumentChunk", back_populates="document", cascade="all, delete-orphan")

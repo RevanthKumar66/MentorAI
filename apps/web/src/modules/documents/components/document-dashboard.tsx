@@ -265,10 +265,14 @@ export const DocumentDashboard: React.FC = () => {
                                   <Icon className="w-3.5 h-3.5" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-slate-800 truncate pr-4" title={doc.original_file_name}>
+                                  <Link 
+                                    href={`/documents/${doc.id}`} 
+                                    className="text-xs font-bold text-slate-850 hover:text-slate-950 hover:underline truncate pr-4 block" 
+                                    title={doc.original_file_name}
+                                  >
                                     {doc.original_file_name}
-                                  </p>
-                                  <span className="inline-flex sm:hidden text-[9px] font-medium text-slate-400 mt-0.5">
+                                  </Link>
+                                  <span className="inline-flex sm:hidden text-[9px] font-medium text-slate-450 mt-0.5">
                                     {formatBytes(doc.file_size)}
                                   </span>
                                 </div>

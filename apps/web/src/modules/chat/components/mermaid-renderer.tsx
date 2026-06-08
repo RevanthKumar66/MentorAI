@@ -4,9 +4,63 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface MermaidRendererProps {
   code: string;
+  isStreaming?: boolean;
 }
 
-export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ code }) => {
+const preprocessMermaidCode = (code: string): string => {
+  let processed = code;
+  
+  // 1. Match double brackets first to prevent partial matching:
+  
+  // Match double brackets like ID([content])
+  processed = processed.replace(/(^|[\s;>-])([a-zA-Z0-9_-]+)\s*\(\[([^\]\r\n]+)\]\)/g, (match, prefix, id, content) => {
+    if (content.startsWith('"') && content.endsWith('"')) return match;
+    const clean = content.replace(/"/g, "'");
+    return `${prefix}${id}(["${clean}"])`;
+  });
+
+  // Match double brackets like ID((content))
+  processed = processed.replace(/(^|[\s;>-])([a-zA-Z0-9_-]+)\s*\(\(([^)\r\n]+)\)\)/g, (match, prefix, id, content) => {
+    if (content.startsWith('"') && content.endsWith('"')) return match;
+    const clean = content.replace(/"/g, "'");
+    return `${prefix}${id}(("${clean}"))`;
+  });
+
+  // Match double brackets like ID[[content]]
+  processed = processed.replace(/(^|[\s;>-])([a-zA-Z0-9_-]+)\s*\[\[([^\]\r\n]+)\]\]/g, (match, prefix, id, content) => {
+    if (content.startsWith('"') && content.endsWith('"')) return match;
+    const clean = content.replace(/"/g, "'");
+    return `${prefix}${id}[["${clean}"]]`;
+  });
+
+  // 2. Match single brackets with negative lookahead:
+
+  // Match ID[content] -> content cannot contain ]
+  processed = processed.replace(/(^|[\s;>-])([a-zA-Z0-9_-]+)\s*\[(?!\[)([^\]\r\n]+)\](?!\])/g, (match, prefix, id, content) => {
+    if (content.startsWith('"') && content.endsWith('"')) return match;
+    const clean = content.replace(/"/g, "'");
+    return `${prefix}${id}["${clean}"]`;
+  });
+  
+  // Match ID(content) -> content cannot contain )
+  // We use (?![\(\[]) to ensure the opening parenthesis is not followed by another ( or a [ (as in ([...]))
+  processed = processed.replace(/(^|[\s;>-])([a-zA-Z0-9_-]+)\s*\((?![\(\[])([^)\r\n]+)\)(?!\))/g, (match, prefix, id, content) => {
+    if (content.startsWith('"') && content.endsWith('"')) return match;
+    const clean = content.replace(/"/g, "'");
+    return `${prefix}${id}("${clean}")`;
+  });
+  
+  // Match ID{content} -> content cannot contain }
+  processed = processed.replace(/(^|[\s;>-])([a-zA-Z0-9_-]+)\s*\{(?!\{)([^}\r\n]+)\}(?!\})/g, (match, prefix, id, content) => {
+    if (content.startsWith('"') && content.endsWith('"')) return match;
+    const clean = content.replace(/"/g, "'");
+    return `${prefix}${id}{"${clean}"}`;
+  });
+
+  return processed;
+};
+
+export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ code, isStreaming = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -29,11 +83,22 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ code }) => {
           },
         });
         
+        // Suppress default parse error logging on the instance
+        try {
+          (mermaid as unknown as { parseError?: (...args: unknown[]) => void }).parseError = () => {};
+        } catch {
+          // ignore if read-only property
+        }
+        
         // Create unique ID for rendering
         const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
         
-        // Clean code (remove leading/trailing spaces, newlines)
-        const cleanCode = code.trim();
+        // Clean and preprocess code to wrap invalid unquoted labels in quotes
+        const cleanCode = preprocessMermaidCode(code.trim());
+        
+        // Pre-validate diagram syntax before calling render.
+        // This avoids throwing unhandled promise exceptions from render midway.
+        await mermaid.parse(cleanCode);
         
         const { svg: renderedSvg } = await mermaid.render(id, cleanCode);
         
@@ -42,10 +107,15 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ code }) => {
           setError('');
         }
       } catch (err) {
-        console.error('Mermaid render error:', err);
-        if (active) {
-          const errMsg = err instanceof Error ? err.message : String(err);
-          setError(errMsg || 'Error rendering workflow diagram. Please check Mermaid syntax.');
+        if (isStreaming) {
+          // During streaming, syntax errors are expected and temporary. Log quietly as warning.
+          console.warn('Mermaid rendering draft during stream (normal):', err instanceof Error ? err.message : err);
+        } else {
+          console.error('Mermaid render error:', err);
+          if (active) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            setError(errMsg || 'Error rendering workflow diagram. Please check Mermaid syntax.');
+          }
         }
       }
     };
@@ -55,9 +125,9 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({ code }) => {
     return () => {
       active = false;
     };
-  }, [code]);
+  }, [code, isStreaming]);
 
-  if (error) {
+  if (error && !isStreaming) {
     return (
       <div className="bg-rose-50/50 border border-rose-200/60 p-3.5 rounded-[8px] my-3.5 text-rose-700 text-xs font-mono whitespace-pre-wrap select-text">
         <div className="font-bold mb-1">Diagram Render Error:</div>

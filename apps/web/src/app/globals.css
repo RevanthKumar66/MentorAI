@@ -78,8 +78,8 @@ body {
 /* From Uiverse.io by narmesh_sah - black and grey color combination */
 .preloader {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 12px;
+  height: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,6 +166,73 @@ body {
   content: '';
   display: inline-block;
 }
+
+/* Custom Premium Dark Code Highlight Theme (Prism tokens) */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #72808c; /* Muted gray-green for comments */
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: #abb2bf; /* Muted punctuation */
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #ffab70; /* Soft orange for attributes/numbers/booleans */
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #85e89d; /* Soft light green for strings */
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+  color: #56b6c2; /* Teal for operators */
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #f97583; /* Sleek pink/red for keywords */
+  font-weight: bold;
+}
+
+.token.function,
+.token.class-name {
+  color: #79b8ff; /* Sky blue for functions and classes */
+  font-weight: 600;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #e5c07b; /* Soft yellow for regex and variables */
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
 
 
 

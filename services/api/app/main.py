@@ -14,6 +14,12 @@ from app.database.session import get_async_db
 from app.modules.auth.api import router as auth_router
 from app.modules.chat.api import router as chat_router
 from app.modules.documents.api import router as documents_router
+from app.modules.documents.collections_api import router as collections_router
+from app.modules.documents.settings_api import router as settings_router
+from app.modules.documents.notes_api import router as notes_router
+from app.modules.documents.workspace_settings_api import router as workspace_settings_router
+from app.modules.billing.api import router as billing_router
+
 
 # Configure structured logging
 logging.basicConfig(
@@ -122,3 +128,9 @@ async def readiness_check():
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
+app.include_router(collections_router, prefix="/api/v1")
+app.include_router(settings_router, prefix="/api/v1")
+app.include_router(notes_router, prefix="/api/v1")
+app.include_router(workspace_settings_router, prefix="/api/v1")
+app.include_router(billing_router, prefix="/api/v1")
+

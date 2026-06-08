@@ -114,3 +114,7 @@ Desktop.ini
 *.db-journal
 *.sqlite
 
+# Scratch scripts
+scratch/
+
+

@@ -55,17 +55,22 @@ class ChatService:
         title: str = "New Conversation",
         model_name: str = "gemini-2.5-flash",
         system_prompt: Optional[str] = None,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        role: str = "general"
     ) -> ChatSession:
         if not system_prompt:
-            system_prompt = read_prompt("system.md")
+            prompt_file = f"{role}_prompt.md" if role != "general" else "system.md"
+            system_prompt = read_prompt(prompt_file)
+            if not system_prompt and role != "general":
+                system_prompt = read_prompt("system.md")
         
         session = await self.repo.create_session(
             user_id=user_id,
             title=title,
             model_name=model_name,
             system_prompt=system_prompt,
-            temperature=temperature
+            temperature=temperature,
+            role=role
         )
         await self.db.commit()
         return session
@@ -112,7 +117,8 @@ class ChatService:
         self,
         session_id: uuid.UUID,
         user_id: uuid.UUID,
-        content: str
+        content: str,
+        is_retry: bool = False
     ) -> AsyncGenerator[str, None]:
         """Handles user message insertion, streaming response via SSE, logging usage, and titles.
         
@@ -127,16 +133,27 @@ class ChatService:
             return
 
         # 2. Count messages to check if this is the first exchange
-        is_first_exchange = len(session.messages) == 0
-
-        # 3. Add user message to DB
-        user_msg = await self.repo.add_message(
-            session_id=session_id,
-            role="user",
-            content=content,
-            model_name=session.model_name
+        is_first_exchange = len(session.messages) == 0 or (
+            len(session.messages) == 1
+            and session.messages[0].role == "user"
+            and (session.title is None or session.title == "New Conversation")
         )
-        await self.db.commit()
+
+        # 3. Add user message to DB if not retry or duplicate
+        should_insert = True
+        if is_retry or (session.messages and session.messages[-1].role == "user" and session.messages[-1].content.strip() == content.strip()):
+            if session.messages and session.messages[-1].role == "user" and session.messages[-1].content.strip() == content.strip():
+                should_insert = False
+                logger.info(f"Retry/Duplicate detected for session {session_id}. User message already exists as the last message in DB. Skipping insertion.")
+
+        if should_insert:
+            user_msg = await self.repo.add_message(
+                session_id=session_id,
+                role="user",
+                content=content,
+                model_name=session.model_name
+            )
+            await self.db.commit()
 
         # Load messages directly from DB to bypass SQLAlchemy identity map cache gotchas
         from sqlalchemy import select
@@ -159,16 +176,103 @@ class ChatService:
         # 5. Instantiate Provider
         provider = LLMProviderFactory.get_provider()
         
-        # 5.1 Run Response Intelligence planning
+        # 5.1 Fetch UserSettings if present to respect user preferences (length, language, goals)
+        user_settings = None
+        try:
+            from app.models.user_settings import UserSettings
+            from sqlalchemy import select
+            stmt_settings = select(UserSettings).where(UserSettings.user_id == user_id)
+            res_settings = await self.db.execute(stmt_settings)
+            user_settings = res_settings.scalar_one_or_none()
+        except Exception as settings_err:
+            logger.error(f"Failed to fetch user settings for user {user_id}: {str(settings_err)}")
+
+        # 5.2 Run Response Intelligence planning
         from app.intelligence.output_processor import OutputProcessor
         intel_processor = OutputProcessor()
         dynamic_system_prompt = session.system_prompt
         try:
-            intel_plan = await intel_processor.orchestrate_planning(content, provider=provider, model=session.model_name)
+            intel_plan = await intel_processor.orchestrate_planning(
+                content, 
+                provider=provider, 
+                model=session.model_name,
+                user_settings=user_settings
+            )
             dynamic_system_prompt = intel_processor.construct_system_prompt(intel_plan, session.system_prompt or "")
             logger.info(f"Response Intelligence Plan created: intent={intel_plan.get('intent')}, complexity={intel_plan.get('complexity')}")
         except Exception as planning_err:
             logger.error(f"Failed to execute Response Intelligence planning: {str(planning_err)}", exc_info=True)
+
+        # 5.3 Fetch active workspace context
+        from app.services.workspace_context_service import WorkspaceContextService
+        workspace_service = WorkspaceContextService(self.db)
+        workspace_ctx = await workspace_service.get_workspace_context(session_id, user_id)
+        
+        workspace_prompt = ""
+        collection_ids = None
+        if workspace_ctx:
+            collection_ids = [workspace_ctx["collection_id"]]
+            doc_count = len(workspace_ctx["documents"])
+            notes_count = len(workspace_ctx["notes"])
+            
+            workspace_prompt = (
+                f"You are MentorAI.\n"
+                f"Current Workspace: {workspace_ctx['workspace_name']}\n"
+                f"Workspace Goal: {workspace_ctx['workspace_description']}\n"
+                f"Documents Available: {doc_count}\n"
+                f"Notes Available: {notes_count}\n\n"
+                f"Always prioritize workspace knowledge before using general knowledge.\n"
+                f"If information is retrieved from workspace documents, cite the source.\n"
+                f"If information is unavailable in workspace documents, clearly state that and then answer using general knowledge.\n\n"
+            )
+            
+            # Inject Active Notes
+            if workspace_ctx["notes"]:
+                notes_block = []
+                for n in workspace_ctx["notes"]:
+                    notes_block.append(f"[Note: {n['title']}]\n{n['content']}")
+                workspace_prompt += (
+                    "=== ACTIVE WORKSPACE NOTES ===\n"
+                    + "\n\n".join(notes_block)
+                    + "\n=============================\n\n"
+                )
+
+        # 5.4 Fetch relevant RAG chunks if user has active documents or workspace
+        from app.services.rag_service import RAGService
+        rag_service = RAGService(self.db)
+        rag_context = ""
+        retrieved_chunks = []
+        try:
+            chunks = await rag_service.get_similar_chunks(
+                user_id=user_id, 
+                query=content, 
+                collection_ids=collection_ids, 
+                k=5
+            )
+            if chunks:
+                retrieved_chunks = chunks
+                logger.info(f"Retrieved {len(chunks)} RAG chunks for query: '{content[:30]}...'")
+                context_parts = []
+                for c in chunks:
+                    score_pct = int(c["score"] * 100)
+                    context_parts.append(
+                        f"[File: {c['file_name']} (Chunk {c['chunk_index']}, Relevance: {score_pct}%)]\n{c['content']}"
+                    )
+                rag_context = (
+                    "=== RETRIEVED WORKSPACE KNOWLEDGE (RAG) ===\n"
+                    "The following verified context from the user's uploaded workspace files is highly relevant to the query. "
+                    "Incorporate this knowledge to answer the user's question accurately. "
+                    "Cite or reference the specific source file name(s) where appropriate.\n\n"
+                    + "\n\n".join(context_parts)
+                    + "\n============================================\n\n"
+                )
+        except Exception as rag_err:
+            logger.error(f"Failed to query RAG chunks: {rag_err}", exc_info=True)
+
+        if workspace_prompt:
+            dynamic_system_prompt = f"{workspace_prompt}{dynamic_system_prompt}"
+        if rag_context:
+            dynamic_system_prompt = f"{rag_context}{dynamic_system_prompt}"
 
         accumulated_text = ""
         input_tokens = 0
@@ -200,6 +304,19 @@ class ChatService:
                 if chunk.get("latency_ms") is not None:
                     latency_ms = chunk["latency_ms"] or 0
 
+            # Format citations
+            citations_list = None
+            if retrieved_chunks:
+                citations_list = [
+                    {
+                        "source": c["file_name"],
+                        "page": 1,
+                        "chunk": c["chunk_index"],
+                        "score": round(c["score"], 2)
+                    }
+                    for c in retrieved_chunks
+                ]
+
             # 6. Save Assistant response message to DB
             assistant_msg = await self.repo.add_message(
                 session_id=session_id,
@@ -208,7 +325,8 @@ class ChatService:
                 model_name=session.model_name,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
-                latency_ms=latency_ms
+                latency_ms=latency_ms,
+                citations=citations_list
             )
             await self.db.commit()
 
@@ -235,6 +353,19 @@ class ChatService:
                         yield f"data: {json.dumps({'title': new_title})}\n\n"
                 except Exception as ex:
                     logger.error(f"Failed to auto-generate session title: {str(ex)}")
+
+            # Stream citations list before [DONE]
+            if retrieved_chunks:
+                citations = [
+                    {
+                        "source": c["file_name"],
+                        "page": 1,
+                        "chunk": c["chunk_index"],
+                        "score": round(c["score"], 2)
+                    }
+                    for c in retrieved_chunks
+                ]
+                yield f"data: {json.dumps({'citations': citations})}\n\n"
 
             # Yield done signal
             yield "data: [DONE]\n\n"

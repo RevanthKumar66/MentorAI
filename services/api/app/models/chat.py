@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy import String, ForeignKey, Text, Integer, Float, Boolean, DateTime, func
+from sqlalchemy import String, ForeignKey, Text, Integer, Float, Boolean, DateTime, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import BaseModel
 
@@ -40,6 +40,12 @@ class ChatSession(BaseModel):
         server_default="false",
         nullable=False
     )
+    role: Mapped[str] = mapped_column(
+        String(50),
+        default="general",
+        server_default="general",
+        nullable=False
+    )
     last_message_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -54,6 +60,12 @@ class ChatSession(BaseModel):
         cascade="all, delete-orphan",
         order_by="ChatMessage.created_at"
     )
+    collections: Mapped[List["Collection"]] = relationship(
+        "Collection",
+        secondary="collection_chats",
+        back_populates="chats"
+    )
+
 
 class ChatMessage(BaseModel):
     """ChatMessage model containing conversation exchange content."""
@@ -100,11 +112,19 @@ class ChatMessage(BaseModel):
         server_default="0",
         nullable=False
     )
+    citations: Mapped[Optional[list]] = mapped_column(
+        JSON,
+        nullable=True
+    )
+
 
     # Relationships
     session: Mapped[ChatSession] = relationship(ChatSession, back_populates="messages")
 
 from app.models.user import User
+from app.models.collection import Collection, collection_chats
 ChatSession.user = relationship("User", back_populates="chat_sessions")
 ChatSession.messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan", order_by="ChatMessage.created_at")
+ChatSession.collections = relationship("Collection", secondary=collection_chats, back_populates="chats")
 ChatMessage.session = relationship(ChatSession, back_populates="messages")
+

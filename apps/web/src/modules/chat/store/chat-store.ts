@@ -8,6 +8,7 @@ export interface ChatSession {
   system_prompt: string | null;
   temperature: number;
   is_archived: boolean;
+  role: string;
   last_message_at: string;
   created_at: string;
 }
@@ -22,7 +23,9 @@ export interface ChatMessage {
   output_tokens: number;
   latency_ms: number;
   created_at: string;
+  citations?: any[];
 }
+
 
 interface ChatState {
   sidebarOpen: boolean;

@@ -20,6 +20,8 @@ export function useChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamError, setStreamError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
+  const [streamingCitations, setStreamingCitations] = useState<any[]>([]);
+
 
   // 1. Fetch sessions
   const { data: remoteSessions, isLoading: loadingSessions } = useQuery({
@@ -73,28 +75,42 @@ export function useChat() {
     },
   });
 
+  // 4.5. Update Session Mutation
+  const updateSessionMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: { title?: string; role?: string; temperature?: number; is_archived?: boolean; model_name?: string } }) => 
+      chatApi.updateSession(id, payload),
+    onSuccess: (updatedSession) => {
+      updateSession(updatedSession.id, updatedSession);
+      queryClient.invalidateQueries({ queryKey: ['chat-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['chat-session-details', updatedSession.id] });
+    },
+  });
+
   // 5. Send Message (Streams content using SSE)
-  const sendMessage = async (content: string) => {
+  const sendMessage = async (content: string, isRetry = false) => {
     if (!activeSessionId || !content.trim() || isStreaming) return;
 
     setStreamError(null);
     setIsStreaming(true);
     setStreamingContent('');
+    setStreamingCitations([]);
 
-    const userMessageTemp: ChatMessage = {
-      id: `temp-user-${Date.now()}`,
-      session_id: activeSessionId,
-      role: 'user',
-      content,
-      model_name: null,
-      input_tokens: 0,
-      output_tokens: 0,
-      latency_ms: 0,
-      created_at: new Date().toISOString(),
-    };
+    if (!isRetry) {
+      const userMessageTemp: ChatMessage = {
+        id: `temp-user-${Date.now()}`,
+        session_id: activeSessionId,
+        role: 'user',
+        content,
+        model_name: null,
+        input_tokens: 0,
+        output_tokens: 0,
+        latency_ms: 0,
+        created_at: new Date().toISOString(),
+      };
 
-    // Optimistically add user message
-    setLocalMessages((prev) => [...prev, userMessageTemp]);
+      // Optimistically add user message
+      setLocalMessages((prev) => [...prev, userMessageTemp]);
+    }
 
     // Update last message timestamp in session
     updateSession(activeSessionId, { last_message_at: new Date().toISOString() });
@@ -102,18 +118,26 @@ export function useChat() {
     let finalAssistantText = '';
 
     try {
-      await streamChatResponse(activeSessionId, content, {
-        onChunk: (chunkText) => {
-          finalAssistantText += chunkText;
-          setStreamingContent(finalAssistantText);
+      await streamChatResponse(
+        activeSessionId,
+        content,
+        {
+          onChunk: (chunkText) => {
+            finalAssistantText += chunkText;
+            setStreamingContent(finalAssistantText);
+          },
+          onTitle: (generatedTitle) => {
+            updateSession(activeSessionId, { title: generatedTitle });
+          },
+          onCitations: (cits) => {
+            setStreamingCitations(cits);
+          },
+          onError: (err) => {
+            setStreamError(err);
+          },
         },
-        onTitle: (generatedTitle) => {
-          updateSession(activeSessionId, { title: generatedTitle });
-        },
-        onError: (err) => {
-          setStreamError(err);
-        },
-      });
+        isRetry
+      );
 
       // Stream successfully completed, sync database state
       queryClient.invalidateQueries({ queryKey: ['chat-session-details', activeSessionId] });
@@ -137,16 +161,7 @@ export function useChat() {
 
     const lastUserMessage = userMessages[userMessages.length - 1];
 
-    // Remove the last message from localMessages if it's a temporary user message
-    setLocalMessages((prev) => {
-      const last = prev[prev.length - 1];
-      if (last && last.id.startsWith('temp-user-')) {
-        return prev.slice(0, -1);
-      }
-      return prev;
-    });
-
-    await sendMessage(lastUserMessage.content);
+    await sendMessage(lastUserMessage.content, true);
   };
 
   return {
@@ -157,11 +172,14 @@ export function useChat() {
     isStreaming,
     streamError,
     streamingContent,
+    streamingCitations,
     loadingSessions,
     loadingMessages,
     sendMessage,
     retry,
     createSession: (model_name?: string) => createSessionMutation.mutate({ model_name }),
     deleteSession: (id: string) => deleteSessionMutation.mutate(id),
+    updateSessionMeta: (id: string, payload: { title?: string; role?: string; temperature?: number; is_archived?: boolean; model_name?: string }) => 
+      updateSessionMutation.mutate({ id, payload }),
   };
 }

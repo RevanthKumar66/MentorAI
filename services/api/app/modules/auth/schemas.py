@@ -8,6 +8,9 @@ class ProfileBase(BaseModel):
     preferences: dict = {}
     learning_goals: dict = {}
     settings: dict = {}
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    email: Optional[str] = None
 
 class ProfileResponse(ProfileBase):
     model_config = ConfigDict(from_attributes=True)

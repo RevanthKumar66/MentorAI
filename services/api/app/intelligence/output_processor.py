@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger("mentorai-os.intelligence.output_processor")
 
@@ -16,13 +16,26 @@ class OutputProcessor:
         self.planner = planner or ResponsePlanner()
         self.selector = selector or FormatSelector()
         self.generator = generator or SuggestionGenerator()
-
-    async def orchestrate_planning(self, query: str, provider=None, model: str = "gemini-2.5-flash") -> Dict[str, Any]:
+    async def orchestrate_planning(
+        self, 
+        query: str, 
+        provider=None, 
+        model: str = "gemini-2.5-flash",
+        user_settings: Optional[Any] = None
+    ) -> Dict[str, Any]:
         """Runs classifier, planner, selector to build response specifications."""
         intent_info = await self.classifier.classify(query, provider=provider, model=model)
-        plan = self.planner.plan(query, intent_info)
+        plan = self.planner.plan(query, intent_info, user_settings=user_settings)
         rules = self.selector.select_rules(plan, query)
         
+        preferred_language = "english"
+        learning_goal = ""
+        if user_settings:
+            if hasattr(user_settings, 'preferred_language') and user_settings.preferred_language:
+                preferred_language = user_settings.preferred_language
+            if hasattr(user_settings, 'learning_goal') and user_settings.learning_goal:
+                learning_goal = user_settings.learning_goal
+
         return {
             "intent": intent_info.get("intent"),
             "confidence": intent_info.get("confidence"),
@@ -31,7 +44,9 @@ class OutputProcessor:
             "use_table": plan.get("use_table"),
             "use_diagram": plan.get("use_diagram"),
             "length_guideline": plan.get("length_guideline"),
-            "formatting_rules": rules
+            "formatting_rules": rules,
+            "preferred_language": preferred_language,
+            "learning_goal": learning_goal
         }
 
     def construct_system_prompt(self, intelligence_plan: Dict[str, Any], base_prompt: str) -> str:
@@ -54,7 +69,24 @@ class OutputProcessor:
             f"{rules_str}\n\n"
             f"3. LENGTH LIMIT:\n"
             f"{intelligence_plan.get('length_guideline')}\n\n"
-            f"4. FOLLOW-UP QUESTIONS GUIDELINE:\n"
+        )
+
+        pref_lang = intelligence_plan.get("preferred_language", "english").lower()
+        if pref_lang != "english":
+            dynamic_instruction += (
+                f"4. LANGUAGE LOCALIZATION:\n"
+                f"You MUST output your response in {pref_lang.capitalize()}. Translate all sections and concepts into {pref_lang.capitalize()}.\n\n"
+            )
+
+        learn_goal = intelligence_plan.get("learning_goal", "")
+        if learn_goal:
+            dynamic_instruction += (
+                f"5. USER PATHWAY FOCUS:\n"
+                f"Keep in mind the user's primary learning goal: '{learn_goal}'. Tailor all examples, code snippets, analogies, and explanations to help the user advance towards this goal.\n\n"
+            )
+
+        dynamic_instruction += (
+            f"FOLLOW-UP QUESTIONS GUIDELINE:\n"
             f"{suggestions_instruction}\n"
             f"==========================================\n\n"
         )

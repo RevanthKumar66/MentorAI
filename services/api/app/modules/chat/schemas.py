@@ -8,6 +8,7 @@ class ChatSessionCreate(BaseModel):
     model_name: Optional[str] = Field(default="gemini-2.5-flash")
     system_prompt: Optional[str] = None
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
+    role: Optional[str] = Field(default="general")
 
 class ChatSessionResponse(BaseModel):
     id: uuid.UUID
@@ -17,12 +18,20 @@ class ChatSessionResponse(BaseModel):
     system_prompt: Optional[str]
     temperature: float
     is_archived: bool
+    role: str = "general"
     last_message_at: datetime
     created_at: datetime
 
     model_config = {
         "from_attributes": True
     }
+
+class ChatSessionUpdate(BaseModel):
+    title: Optional[str] = None
+    role: Optional[str] = None
+    model_name: Optional[str] = None
+    temperature: Optional[float] = None
+    is_archived: Optional[bool] = None
 
 class ChatMessageResponse(BaseModel):
     id: uuid.UUID
@@ -48,3 +57,5 @@ class ChatSessionDetailResponse(ChatSessionResponse):
 
 class ChatMessageSend(BaseModel):
     content: str
+    is_retry: bool = False
+

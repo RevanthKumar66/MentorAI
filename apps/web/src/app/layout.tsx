@@ -18,11 +18,11 @@ export const metadata: Metadata = {
   description: "AI-powered platform to learn skills, prepare for interviews, master DSA, and analyze datasets.",
   icons: {
     icon: [
-      { url: "/mentorai-symbol-only.ico", sizes: "any" },
-      { url: "/mentorai-symbol-only.svg", type: "image/svg+xml" },
+      { url: "/mentorai-favicon-white.ico", sizes: "any" },
+      { url: "/mentorai-favicon-white.svg", type: "image/svg+xml" },
     ],
-    shortcut: "/mentorai-symbol-only.ico",
-    apple: "/mentorai-symbol-only.ico",
+    shortcut: "/mentorai-favicon-white.ico",
+    apple: "/mentorai-favicon-white.ico",
   },
 };
 

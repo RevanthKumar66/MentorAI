@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useChat } from '../hooks/use-chat';
-import { ChatSidebar } from './chat-sidebar';
 import { ChatWindow } from './chat-window';
 import { ChatInput } from './chat-input';
 
 export const ChatLayout: React.FC = () => {
+  const [inputDraft, setInputDraft] = useState('');
   const {
     sessions,
     activeSessionId,
@@ -19,6 +19,7 @@ export const ChatLayout: React.FC = () => {
     createSession,
     deleteSession,
     retry,
+    updateSessionMeta,
   } = useChat();
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
@@ -33,37 +34,34 @@ export const ChatLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-800">
-      <ChatSidebar
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        loading={loadingSessions}
-        onSelectSession={setActiveSessionId}
-        onCreateSession={() => createSession()}
-        onDeleteSession={handleDelete}
+    <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-50">
+      <ChatWindow
+        sessionTitle={activeTitle}
+        modelName={activeModel}
+        messages={messages}
+        isStreaming={isStreaming}
+        streamingContent={streamingContent}
+        streamError={streamError}
+        loading={loadingMessages && sessions.length > 0}
+        onSendMessage={sendMessage}
+        onRetry={retry}
+        onPrefillInput={setInputDraft}
+        activeSessionId={activeSessionId || undefined}
       />
       
-      <div className="flex-1 flex flex-col h-full min-w-0 bg-slate-50/40">
-        <ChatWindow
-          sessionTitle={activeTitle}
-          modelName={activeModel}
-          messages={messages}
-          isStreaming={isStreaming}
-          streamingContent={streamingContent}
-          streamError={streamError}
-          loading={loadingMessages && sessions.length > 0}
+      {activeSessionId && (
+        <ChatInput
           onSendMessage={sendMessage}
-          onRetry={retry}
+          disabled={isStreaming}
+          modelName={activeModel}
+          activeSessionId={activeSessionId}
+          currentRole={activeSession?.role || 'general'}
+          onUpdateRole={(role) => updateSessionMeta(activeSessionId, { role })}
+          onUpdateModel={(model) => updateSessionMeta(activeSessionId, { model_name: model })}
+          inputDraft={inputDraft}
+          onClearDraft={() => setInputDraft('')}
         />
-        
-        {activeSessionId && (
-          <ChatInput
-            onSendMessage={sendMessage}
-            disabled={isStreaming}
-            modelName={activeModel}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 };

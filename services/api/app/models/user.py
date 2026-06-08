@@ -50,12 +50,43 @@ class User(BaseModel):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    collections: Mapped[List["Collection"]] = relationship(
+        "Collection",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    user_settings: Mapped["UserSettings"] = relationship(
+        "UserSettings",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+    notes: Mapped[List["Note"]] = relationship(
+        "Note",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    workspace_settings: Mapped["WorkspaceSettings"] = relationship(
+        "WorkspaceSettings",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
 
 from app.models.profile import Profile
 from app.models.chat import ChatSession
 from app.models.usage import UsageLog
 from app.models.document import Document
+from app.models.collection import Collection
+from app.models.user_settings import UserSettings
+from app.models.note import Note
+from app.models.workspace_settings import WorkspaceSettings
 User.profile = relationship("Profile", back_populates="user", uselist=False, cascade="all, delete-orphan")
 User.chat_sessions = relationship("ChatSession", back_populates="user", cascade="all, delete-orphan")
 User.usage_logs = relationship("UsageLog", back_populates="user", cascade="all, delete-orphan")
 User.documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
+User.collections = relationship("Collection", back_populates="user", cascade="all, delete-orphan")
+User.user_settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+User.notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+User.workspace_settings = relationship("WorkspaceSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+

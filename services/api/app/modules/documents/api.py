@@ -1,11 +1,14 @@
 import uuid
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, status, File, UploadFile, Query
+from fastapi import APIRouter, Depends, status, File, UploadFile, Query, BackgroundTasks
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_async_db
 from app.models.user import User
+from app.models.chat import ChatSession
+from app.models.document_chunk import DocumentChunk
 from app.modules.auth.dependencies import get_current_user
 from app.common.responses import success_response, error_response
 from app.modules.documents.repository import DocumentRepository
@@ -13,10 +16,23 @@ from app.modules.documents.service import DocumentService
 from app.modules.documents.schemas import (
     DocumentResponse,
     DocumentDownloadResponse,
-    DocumentListResponse
+    DocumentListResponse,
+    DocumentChunkResponse
 )
 
 logger = logging.getLogger("mentorai-os.documents.api")
+
+async def process_document_background(document_id: uuid.UUID, user_id: uuid.UUID):
+    """Background task to run RAG indexing for a newly uploaded document."""
+    from app.database.session import get_async_db
+    from app.services.rag_service import RAGService
+    try:
+        async for db in get_async_db():
+            rag = RAGService(db)
+            await rag.index_document(document_id, user_id)
+            break
+    except Exception as e:
+        logger.error(f"Background task failed for document {document_id}: {e}", exc_info=True)
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -26,6 +42,7 @@ def get_document_service(db: AsyncSession = Depends(get_async_db)) -> DocumentSe
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     service: DocumentService = Depends(get_document_service)
@@ -47,6 +64,9 @@ async def upload_document(
         # Let's commit inside the service or here. Let's commit in the API handler to ensure clean transactional boundary.
         await service.db.commit()
         await service.db.refresh(doc)
+
+        # Trigger background RAG indexing
+        background_tasks.add_task(process_document_background, doc.id, current_user.id)
 
         data = DocumentResponse.model_validate(doc)
         return success_response(
@@ -216,6 +236,46 @@ async def delete_document(
         logger.error(f"Error deleting document: {str(e)}", exc_info=True)
         return error_response(
             code="DELETE_FAILED",
+            message=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@router.get("/{document_id}/chunks")
+async def get_document_chunks(
+    document_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    service: DocumentService = Depends(get_document_service)
+):
+    """Retrieve indexed chunks of a specific document."""
+    try:
+        # First verify the document exists and belongs to the user
+        doc = await service.repo.get_document(document_id, current_user.id)
+        if not doc:
+            return error_response(
+                code="NOT_FOUND",
+                message="Document not found or access denied.",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Load chunks from the document
+        stmt = (
+            select(DocumentChunk)
+            .where(DocumentChunk.document_id == document_id)
+            .order_by(DocumentChunk.chunk_index.asc())
+        )
+        res = await service.db.execute(stmt)
+        chunks = res.scalars().all()
+        
+        serialized_chunks = [DocumentChunkResponse.model_validate(c).model_dump() for c in chunks]
+        
+        return success_response(
+            data=serialized_chunks,
+            message="Document chunks retrieved successfully"
+        )
+    except Exception as e:
+        logger.error(f"Error fetching document chunks: {str(e)}", exc_info=True)
+        return error_response(
+            code="FETCH_CHUNKS_FAILED",
             message=str(e),
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

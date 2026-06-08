@@ -69,6 +69,34 @@ export const documentApi = {
     }
   },
 
+  async getDocumentDetails(documentId: string): Promise<Document> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+      method: 'GET',
+      headers,
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.message || 'Failed to fetch document details');
+    }
+    const body = await res.json();
+    return body.data;
+  },
+
+  async getDocumentChunks(documentId: string): Promise<Array<{ id: string; document_id: string; chunk_index: number; content: string; created_at: string }>> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/documents/${documentId}/chunks`, {
+      method: 'GET',
+      headers,
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.message || 'Failed to fetch document chunks');
+    }
+    const body = await res.json();
+    return body.data;
+  },
+
   async uploadFile(
     file: File,
     onProgress?: (progress: number) => void

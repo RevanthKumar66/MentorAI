@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger("mentorai-os.intelligence.response_planner")
 
@@ -9,8 +9,8 @@ class ResponsePlanner:
     def __init__(self):
         pass
 
-    def plan(self, query: str, intent_info: Dict[str, Any]) -> Dict[str, Any]:
-        """Plans sections, diagrams, and formatting based on intent and query keywords."""
+    def plan(self, query: str, intent_info: Dict[str, Any], user_settings: Optional[Any] = None) -> Dict[str, Any]:
+        """Plans sections, diagrams, and formatting based on intent, query keywords, and user settings."""
         intent = intent_info.get("intent", "general_chat")
         complexity = intent_info.get("complexity", "medium")
         
@@ -51,18 +51,30 @@ class ResponsePlanner:
             else:
                 sections = ["Overview", "Detailed Explanation", "Examples & Applications", "Key Takeaways"]
 
-        # Adjust length guideline based on complexity
-        length_guidelines = {
-            "simple": "Concise, direct, under 200 words.",
-            "medium": "Balanced depth, 200-400 words, including example if helpful.",
-            "complex": "Thorough, structured, 400-800 words, using lists/tables.",
-            "expert": "Comprehensive deep-dive, 800+ words, detailed code/diagrams, progressive disclosure style."
-        }
+        # Adjust length guideline based on user settings or fallback to complexity
+        length_guideline = None
+        if user_settings and hasattr(user_settings, 'response_length') and user_settings.response_length:
+            resp_len = user_settings.response_length.lower()
+            if resp_len == "short":
+                length_guideline = "Generate a brief, highly concise response under 150-200 words. Get straight to the point."
+            elif resp_len == "long":
+                length_guideline = "Generate a comprehensive, detailed, and complete response (400-800+ words), expanding thoroughly on all aspects."
+            elif resp_len == "medium":
+                length_guideline = "Generate a balanced response, typically 200-400 words, with clear structure."
+
+        if not length_guideline:
+            length_guidelines_map = {
+                "simple": "Concise, direct, under 200 words.",
+                "medium": "Balanced depth, 200-400 words, including example if helpful.",
+                "complex": "Thorough, structured, 400-800 words, using lists/tables.",
+                "expert": "Comprehensive deep-dive, 800+ words, detailed code/diagrams, progressive disclosure style."
+            }
+            length_guideline = length_guidelines_map.get(complexity, "Balanced depth.")
         
         return {
             "sections": sections,
             "complexity": complexity,
             "use_table": use_table,
             "use_diagram": use_diagram,
-            "length_guideline": length_guidelines.get(complexity, "Balanced depth.")
+            "length_guideline": length_guideline
         }

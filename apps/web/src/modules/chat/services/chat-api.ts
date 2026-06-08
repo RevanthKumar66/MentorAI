@@ -68,4 +68,24 @@ export const chatApi = {
       throw new Error('Failed to delete chat session');
     }
   },
+
+  async updateSession(sessionId: string, payload: {
+    title?: string;
+    role?: string;
+    temperature?: number;
+    is_archived?: boolean;
+    model_name?: string;
+  }): Promise<ChatSession> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to update chat session');
+    }
+    const body = await res.json();
+    return body.data;
+  },
 };

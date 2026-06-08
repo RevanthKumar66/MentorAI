@@ -51,7 +51,8 @@ class ChatRepository:
         title: str = "New Conversation",
         model_name: str = "gemini-2.5-flash",
         system_prompt: Optional[str] = None,
-        temperature: float = 0.7
+        temperature: float = 0.7,
+        role: str = "general"
     ) -> ChatSession:
         """Create a new ChatSession."""
         session = ChatSession(
@@ -59,7 +60,8 @@ class ChatRepository:
             title=title,
             model_name=model_name,
             system_prompt=system_prompt,
-            temperature=temperature
+            temperature=temperature,
+            role=role
         )
         self.db.add(session)
         await self.db.flush()
@@ -73,7 +75,8 @@ class ChatRepository:
         model_name: Optional[str] = None,
         input_tokens: int = 0,
         output_tokens: int = 0,
-        latency_ms: int = 0
+        latency_ms: int = 0,
+        citations: Optional[List[dict]] = None
     ) -> ChatMessage:
         """Add a ChatMessage to a session and touch the last_message_at timestamp."""
         # Create message
@@ -84,7 +87,8 @@ class ChatRepository:
             model_name=model_name,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            latency_ms=latency_ms
+            latency_ms=latency_ms,
+            citations=citations
         )
         self.db.add(message)
         
@@ -97,6 +101,7 @@ class ChatRepository:
         
         await self.db.flush()
         return message
+
 
     async def update_session_title(self, session_id: uuid.UUID, title: str) -> None:
         """Update the title of a specific ChatSession."""
