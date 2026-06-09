@@ -5,12 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { 
   ArrowLeft, MessageSquare, Cpu, FileText, BarChart3, 
-  Calendar, Award, Sparkles, Brain, Code, GitFork, 
-  Search, Briefcase, GraduationCap
+  Calendar, Sparkles, Brain, Code, GitFork, 
+  Search, Briefcase, GraduationCap, LucideIcon
 } from 'lucide-react';
 import { chatApi, UserAnalytics } from '@/modules/chat/services/chat-api';
 
-const ROLE_DETAILS: Record<string, { name: string; icon: any; colorClass: string; bgClass: string }> = {
+const ROLE_DETAILS: Record<string, { name: string; icon: LucideIcon; colorClass: string; bgClass: string }> = {
   general: { name: 'General Assistant', icon: Sparkles, colorClass: 'text-slate-700', bgClass: 'bg-slate-50 border-slate-200' },
   learning: { name: 'Learning Mentor', icon: GraduationCap, colorClass: 'text-emerald-700', bgClass: 'bg-emerald-50 border-emerald-100' },
   coding: { name: 'Coding Assistant', icon: Code, colorClass: 'text-blue-700', bgClass: 'bg-blue-50 border-blue-100' },

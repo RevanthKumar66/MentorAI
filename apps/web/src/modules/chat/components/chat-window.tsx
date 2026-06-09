@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
-  ArrowRight, BookOpen, Terminal, Code2, Code, User, Share2, Settings, LogOut, ChevronDown, 
+  ArrowRight, Terminal, Code2, Code, User, Share2, Settings, LogOut, ChevronDown, 
   RotateCcw, Database, Search, Star, GraduationCap, Briefcase, BarChart3, FileText, Plus,
   GitFork, MessageSquare, HelpCircle, Compass, Users, Target, Atom, ClipboardCheck, Rocket, LucideIcon, Sparkles
 } from 'lucide-react';
@@ -70,7 +70,7 @@ const cleanErrorMessage = (err: string): string => {
   return cleaned;
 };
 
-const ROLE_DETAILS: Record<string, { name: string; icon: any; colorClass: string }> = {
+const ROLE_DETAILS: Record<string, { name: string; icon: LucideIcon; colorClass: string }> = {
   general: { name: 'General Assistant', icon: Sparkles, colorClass: 'text-slate-650' },
   learning: { name: 'Learning Mentor', icon: GraduationCap, colorClass: 'text-emerald-600' },
   coding: { name: 'Coding Assistant', icon: Code, colorClass: 'text-blue-600' },

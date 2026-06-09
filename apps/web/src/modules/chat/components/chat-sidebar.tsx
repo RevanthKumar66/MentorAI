@@ -7,7 +7,7 @@ import {
   MessageSquare, Plus, Trash2, PanelLeftClose, PanelLeft, 
   FolderOpen, Settings, Search, MoreHorizontal, Edit2, Share2, Archive, FolderPlus, Copy, Folder, X, Check,
   ChevronDown, ChevronRight, GraduationCap, Code, GitFork, Briefcase, BarChart3, FileText, LucideIcon,
-  BookOpen, HelpCircle, Compass, Users, Target, Terminal, Atom, ClipboardCheck, Rocket, Database, Sparkles
+  HelpCircle, Compass, Users, Target, Terminal, Atom, ClipboardCheck, Rocket, Database, Sparkles
 } from 'lucide-react';
 import { ChatSession, useChatStore } from '../store/chat-store';
 import { useAuthStore } from '@/store/auth-store';
@@ -308,7 +308,7 @@ const MoveWorkspaceModal: React.FC<MoveWorkspaceModalProps> = ({ session, collec
         );
         if (!active) return;
         const found = results.find(
-          res => res && res.chats && res.chats.some((ch: any) => ch.id === session.id)
+          res => res && res.chats && res.chats.some((ch: { id: string }) => ch.id === session.id)
         );
         if (found) {
           setSelectedId(found.id);
@@ -337,7 +337,7 @@ const MoveWorkspaceModal: React.FC<MoveWorkspaceModalProps> = ({ session, collec
     try {
       await onMove(session.id, selectedId === 'none' ? null : selectedId);
       onClose();
-    } catch (err) {
+    } catch {
       alert('Failed to move workspace');
     } finally {
       setLoading(false);
@@ -361,7 +361,7 @@ const MoveWorkspaceModal: React.FC<MoveWorkspaceModalProps> = ({ session, collec
           </div>
 
           <p className="text-[11px] text-slate-600 mb-4 shrink-0 leading-relaxed">
-            Choose a workspace to organize <span className="font-bold text-slate-800">"{session.title || 'this conversation'}"</span>.
+            Choose a workspace to organize <span className="font-bold text-slate-800">&quot;{session.title || 'this conversation'}&quot;</span>.
           </p>
 
           {checkingCurrent ? (
