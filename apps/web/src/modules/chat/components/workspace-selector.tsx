@@ -55,7 +55,7 @@ export const WorkspaceSelector: React.FC = () => {
 
       {isOpen && (
         <div className="absolute left-0 mt-1.5 w-56 bg-white border border-slate-300 rounded-[6px] shadow-md py-1.5 z-50">
-          <div className="px-3 py-1 text-[9px] font-bold text-slate-700 uppercase tracking-wider select-none">
+          <div className="px-3 py-1 text-xs font-semibold text-slate-800 select-none">
             Active Workspace
           </div>
           <button

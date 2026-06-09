@@ -9,6 +9,8 @@ export interface ChatSession {
   temperature: number;
   is_archived: boolean;
   role: string;
+  role_type?: string;
+  persona_type?: string;
   last_message_at: string;
   created_at: string;
 }

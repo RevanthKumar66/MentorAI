@@ -61,8 +61,8 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleCreateSession = async () => {
-    createSession();
+  const handleCreateSession = async (options?: any) => {
+    createSession(options);
     if (pathname !== '/chat') {
       router.push('/chat');
     }

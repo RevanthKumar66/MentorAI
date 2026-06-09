@@ -18,6 +18,7 @@ export interface Collection {
   description?: string;
   color?: string;
   icon?: string;
+  document_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -61,7 +62,7 @@ export const collectionApi = {
     return body.data || [];
   },
 
-  async getCollection(id: string): Promise<Collection & { documents: any[] }> {
+  async getCollection(id: string): Promise<Collection & { documents: any[]; chats: any[] }> {
     const headers = await getHeaders();
     const res = await fetch(`${API_BASE_URL}/collections/${id}`, {
       method: 'GET',

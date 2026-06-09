@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Paperclip, FileText, X, ChevronDown,
-  MessageSquare, BookOpen, Code, Network, Search, Briefcase, Database 
+  Code, Search, Briefcase, Sparkles,
+  GraduationCap, GitFork, BarChart3
 } from 'lucide-react';
 
 /* ─── Safe cross-browser SpeechRecognition helper ─── */
@@ -21,19 +22,21 @@ const roleLabels: Record<string, string> = {
   learning: 'Learning Mentor',
   coding: 'Coding Assistant',
   dsa: 'DSA Coach',
-  research: 'Research Assistant',
-  career: 'Career Coach',
-  data_science: 'Data Science Copilot'
+  research: 'Research Analyst',
+  career: 'Career Advisor',
+  datascience: 'Data Scientist',
+  document: 'Document Assistant'
 };
 
 const roleIcons: Record<string, React.ReactNode> = {
-  general: <MessageSquare className="w-3 h-3 shrink-0 text-slate-700" />,
-  learning: <BookOpen className="w-3 h-3 shrink-0 text-slate-700" />,
+  general: <Sparkles className="w-3 h-3 shrink-0 text-slate-700" />,
+  learning: <GraduationCap className="w-3 h-3 shrink-0 text-slate-700" />,
   coding: <Code className="w-3 h-3 shrink-0 text-slate-700" />,
-  dsa: <Network className="w-3 h-3 shrink-0 text-slate-700" />,
+  dsa: <GitFork className="w-3 h-3 shrink-0 text-slate-700" />,
   research: <Search className="w-3 h-3 shrink-0 text-slate-700" />,
   career: <Briefcase className="w-3 h-3 shrink-0 text-slate-700" />,
-  data_science: <Database className="w-3 h-3 shrink-0 text-slate-700" />
+  datascience: <BarChart3 className="w-3 h-3 shrink-0 text-slate-700" />,
+  document: <FileText className="w-3 h-3 shrink-0 text-slate-700" />
 };
 
 const modelLabels: Record<string, string> = {

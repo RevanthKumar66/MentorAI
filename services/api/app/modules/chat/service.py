@@ -12,7 +12,8 @@ from app.modules.usage.service import UsageService
 from app.llm.providers.factory import LLMProviderFactory
 from app.llm.exceptions import LLMProviderException
 
-logger = logging.getLogger("mentorai-os.chat.service")
+from app.core.logging import get_logger, log_event
+logger = get_logger("mentorai-os.chat.service")
 
 def get_prompt_path(filename: str) -> str:
     """Traverses up directories to find packages/prompts/chat/filename."""
@@ -56,13 +57,32 @@ class ChatService:
         model_name: str = "gemini-2.5-flash",
         system_prompt: Optional[str] = None,
         temperature: float = 0.7,
-        role: str = "general"
+        role: str = "general",
+        role_type: str = "general",
+        persona_type: str = "teacher",
+        workspace_id: Optional[uuid.UUID] = None
     ) -> ChatSession:
+        if role_type == "general" and role != "general":
+            role_type = role
+
+        # Get user preferences if any
+        from app.models.user_preferences import UserPreferences
+        from sqlalchemy import select
+        prefs = None
+        try:
+            stmt_prefs = select(UserPreferences).where(UserPreferences.user_id == user_id)
+            res_prefs = await self.db.execute(stmt_prefs)
+            prefs = res_prefs.scalar_one_or_none()
+        except Exception as prefs_err:
+            logger.error(f"Failed to fetch user preferences: {str(prefs_err)}")
+
         if not system_prompt:
-            prompt_file = f"{role}_prompt.md" if role != "general" else "system.md"
-            system_prompt = read_prompt(prompt_file)
-            if not system_prompt and role != "general":
-                system_prompt = read_prompt("system.md")
+            from app.ai.context.context_builder import WorkspaceContextBuilder
+            temp_session = ChatSession(
+                role_type=role_type,
+                persona_type=persona_type
+            )
+            system_prompt = WorkspaceContextBuilder.build_system_prompt(temp_session, prefs)
         
         session = await self.repo.create_session(
             user_id=user_id,
@@ -70,8 +90,40 @@ class ChatService:
             model_name=model_name,
             system_prompt=system_prompt,
             temperature=temperature,
-            role=role
+            role=role,
+            role_type=role_type,
+            persona_type=persona_type
         )
+
+        log_event(
+            logger,
+            "session_created",
+            session_id=str(session.id),
+            role=role,
+            persona=persona_type,
+            workspace_id=str(workspace_id) if workspace_id else None
+        )
+
+        if workspace_id:
+            from app.models.collection import Collection
+            col_stmt = select(Collection).where(
+                Collection.id == workspace_id,
+                Collection.user_id == user_id,
+                Collection.is_deleted == False
+            )
+            col_res = await self.db.execute(col_stmt)
+            collection = col_res.scalar_one_or_none()
+            if not collection:
+                raise ValueError("Workspace not found or access denied")
+            
+            await self.repo.link_session_to_workspace(session.id, workspace_id)
+            log_event(
+                logger,
+                "workspace_linked",
+                session_id=str(session.id),
+                collection_id=str(workspace_id)
+            )
+
         await self.db.commit()
         return session
 
@@ -80,6 +132,87 @@ class ChatService:
         if deleted:
             await self.db.commit()
         return deleted
+
+    async def update_session(
+        self,
+        session_id: uuid.UUID,
+        user_id: uuid.UUID,
+        payload: Any
+    ) -> Optional[ChatSession]:
+        """Update session metadata and handle prompt re-assembly if roles/personas change."""
+        session = await self.repo.get_session_with_messages(session_id, user_id)
+        if not session:
+            return None
+
+        old_role = session.role
+        old_role_type = session.role_type
+        old_persona = session.persona_type
+
+        changes = {}
+        if payload.title is not None:
+            changes["title"] = (session.title, payload.title)
+            session.title = payload.title
+        if payload.temperature is not None:
+            changes["temperature"] = (session.temperature, payload.temperature)
+            session.temperature = payload.temperature
+        if payload.is_archived is not None:
+            changes["is_archived"] = (session.is_archived, payload.is_archived)
+            session.is_archived = payload.is_archived
+        if payload.model_name is not None:
+            changes["model_name"] = (session.model_name, payload.model_name)
+            session.model_name = payload.model_name
+
+        role_updated = False
+        if payload.role is not None:
+            changes["role"] = (session.role, payload.role)
+            session.role = payload.role
+            role_updated = True
+        if payload.role_type is not None:
+            changes["role_type"] = (session.role_type, payload.role_type)
+            session.role_type = payload.role_type
+            role_updated = True
+        if payload.persona_type is not None:
+            changes["persona_type"] = (session.persona_type, payload.persona_type)
+            session.persona_type = payload.persona_type
+            role_updated = True
+
+        if role_updated:
+            log_event(
+                logger,
+                "role_changed",
+                session_id=str(session_id),
+                old_role=old_role,
+                new_role=session.role,
+                old_role_type=old_role_type,
+                new_role_type=session.role_type,
+                old_persona=old_persona,
+                new_persona=session.persona_type
+            )
+            try:
+                from app.models.user_preferences import UserPreferences as UserPrefsModel
+                from sqlalchemy import select as sa_select
+                prefs_stmt = sa_select(UserPrefsModel).where(UserPrefsModel.user_id == user_id)
+                prefs_res = await self.db.execute(prefs_stmt)
+                user_prefs = prefs_res.scalar_one_or_none()
+                from app.ai.context.context_builder import WorkspaceContextBuilder
+                new_prompt = WorkspaceContextBuilder.build_system_prompt(session, user_prefs)
+                if new_prompt:
+                    session.system_prompt = new_prompt
+            except Exception as prompt_err:
+                logger.warning(f"Failed to rebuild system prompt on role update: {str(prompt_err)}")
+
+        if changes:
+            log_event(
+                logger,
+                "session_updated",
+                session_id=str(session_id),
+                changes={k: str(v[1]) for k, v in changes.items()}
+            )
+
+        await self.db.commit()
+        await self.db.refresh(session)
+        return session
+
 
     async def generate_chat_title(self, user_message: str, model_name: str) -> str:
         """Call the LLM provider using title_generator template to generate a concise title."""
@@ -154,6 +287,13 @@ class ChatService:
                 model_name=session.model_name
             )
             await self.db.commit()
+            log_event(
+                logger,
+                "message_sent",
+                session_id=str(session_id),
+                role="user",
+                content_preview=content[:100]
+            )
 
         # Load messages directly from DB to bypass SQLAlchemy identity map cache gotchas
         from sqlalchemy import select
@@ -176,21 +316,58 @@ class ChatService:
         # 5. Instantiate Provider
         provider = LLMProviderFactory.get_provider()
         
-        # 5.1 Fetch UserSettings if present to respect user preferences (length, language, goals)
-        user_settings = None
-        try:
+        # Define helper functions using fresh database sessions for safe parallel execution
+        async def _fetch_user_settings(u_id):
             from app.models.user_settings import UserSettings
             from sqlalchemy import select
-            stmt_settings = select(UserSettings).where(UserSettings.user_id == user_id)
-            res_settings = await self.db.execute(stmt_settings)
-            user_settings = res_settings.scalar_one_or_none()
-        except Exception as settings_err:
-            logger.error(f"Failed to fetch user settings for user {user_id}: {str(settings_err)}")
+            from app.database.session import async_session_maker
+            async with async_session_maker() as session:
+                stmt_settings = select(UserSettings).where(UserSettings.user_id == u_id)
+                res_settings = await session.execute(stmt_settings)
+                return res_settings.scalar_one_or_none()
+
+        async def _fetch_user_prefs(u_id):
+            from app.models.user_preferences import UserPreferences
+            from sqlalchemy import select
+            from app.database.session import async_session_maker
+            async with async_session_maker() as session:
+                stmt_prefs = select(UserPreferences).where(UserPreferences.user_id == u_id)
+                res_prefs = await session.execute(stmt_prefs)
+                return res_prefs.scalar_one_or_none()
+
+        async def _fetch_workspace_context(s_id, u_id):
+            from app.services.workspace_context_service import WorkspaceContextService
+            from app.database.session import async_session_maker
+            async with async_session_maker() as session:
+                workspace_service = WorkspaceContextService(session)
+                return await workspace_service.get_workspace_context(s_id, u_id)
+
+        # Run the queries in parallel
+        settings_res, prefs_res, ctx_res = await asyncio.gather(
+            _fetch_user_settings(user_id),
+            _fetch_user_prefs(user_id),
+            _fetch_workspace_context(session_id, user_id),
+            return_exceptions=True
+        )
+
+        user_settings = settings_res if not isinstance(settings_res, Exception) else None
+        user_prefs = prefs_res if not isinstance(prefs_res, Exception) else None
+        workspace_ctx = ctx_res if not isinstance(ctx_res, Exception) else None
+
+        if isinstance(settings_res, Exception):
+            logger.error(f"Failed to fetch user settings: {settings_res}")
+        if isinstance(prefs_res, Exception):
+            logger.error(f"Failed to fetch user preferences: {prefs_res}")
+        if isinstance(ctx_res, Exception):
+            logger.error(f"Failed to fetch workspace context: {ctx_res}")
+
+        from app.ai.context.context_builder import WorkspaceContextBuilder
+        base_prompt = WorkspaceContextBuilder.build_system_prompt(session, user_prefs)
 
         # 5.2 Run Response Intelligence planning
         from app.intelligence.output_processor import OutputProcessor
         intel_processor = OutputProcessor()
-        dynamic_system_prompt = session.system_prompt
+        dynamic_system_prompt = base_prompt
         try:
             intel_plan = await intel_processor.orchestrate_planning(
                 content, 
@@ -198,15 +375,11 @@ class ChatService:
                 model=session.model_name,
                 user_settings=user_settings
             )
-            dynamic_system_prompt = intel_processor.construct_system_prompt(intel_plan, session.system_prompt or "")
+            dynamic_system_prompt = intel_processor.construct_system_prompt(intel_plan, base_prompt)
             logger.info(f"Response Intelligence Plan created: intent={intel_plan.get('intent')}, complexity={intel_plan.get('complexity')}")
         except Exception as planning_err:
             logger.error(f"Failed to execute Response Intelligence planning: {str(planning_err)}", exc_info=True)
 
-        # 5.3 Fetch active workspace context
-        from app.services.workspace_context_service import WorkspaceContextService
-        workspace_service = WorkspaceContextService(self.db)
-        workspace_ctx = await workspace_service.get_workspace_context(session_id, user_id)
         
         workspace_prompt = ""
         collection_ids = None
@@ -251,7 +424,13 @@ class ChatService:
             )
             if chunks:
                 retrieved_chunks = chunks
-                logger.info(f"Retrieved {len(chunks)} RAG chunks for query: '{content[:30]}...'")
+                log_event(
+                    logger,
+                    "rag_retrieved",
+                    session_id=str(session_id),
+                    chunk_count=len(chunks),
+                    query_preview=content[:100]
+                )
                 context_parts = []
                 for c in chunks:
                     score_pct = int(c["score"] * 100)
@@ -329,6 +508,15 @@ class ChatService:
                 citations=citations_list
             )
             await self.db.commit()
+            
+            log_event(
+                logger,
+                "stream_completed",
+                session_id=str(session_id),
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                latency_ms=latency_ms
+            )
 
             # 7. Log usage metrics asynchronously
             if input_tokens > 0 or output_tokens > 0:
@@ -341,6 +529,18 @@ class ChatService:
                     latency_ms=latency_ms
                 )
                 await self.db.commit()
+
+                try:
+                    from app.ai.analytics.analytics_service import AnalyticsService
+                    await AnalyticsService.track_message(
+                        db=self.db,
+                        user_id=user_id,
+                        role=session.role_type or "general",
+                        tokens_used=input_tokens + output_tokens,
+                        is_new_session=is_first_exchange
+                    )
+                except Exception as anal_err:
+                    logger.error(f"Failed to log role analytics: {str(anal_err)}")
 
             # 8. First exchange title auto-generator (non-blocking title update)
             if is_first_exchange:
@@ -371,5 +571,12 @@ class ChatService:
             yield "data: [DONE]\n\n"
 
         except Exception as e:
+            log_event(
+                logger,
+                "stream_error",
+                session_id=str(session_id),
+                error_type=type(e).__name__,
+                error_message=str(e)
+            )
             logger.error(f"Error during chat stream orchestration: {str(e)}", exc_info=True)
             yield f"data: {json.dumps({'error': f'Streaming generation failed: {str(e)}'})}\n\n"

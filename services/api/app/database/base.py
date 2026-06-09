@@ -9,10 +9,13 @@ from app.models.user_settings import UserSettings
 from app.models.document_chunk import DocumentChunk
 from app.models.note import Note
 from app.models.workspace_settings import WorkspaceSettings
+from app.models.user_preferences import UserPreferences
+from app.models.role_usage import RoleUsage
 
 __all__ = [
     "Base", "User", "Profile", "ChatSession", "ChatMessage", "UsageLog", 
     "Document", "Collection", "collection_documents", "collection_chats", 
-    "UserSettings", "DocumentChunk", "Note", "WorkspaceSettings"
+    "UserSettings", "DocumentChunk", "Note", "WorkspaceSettings",
+    "UserPreferences", "RoleUsage"
 ]
 

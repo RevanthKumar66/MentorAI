@@ -46,6 +46,19 @@ class ChatSession(BaseModel):
         server_default="general",
         nullable=False
     )
+    role_type: Mapped[str] = mapped_column(
+        String(100),
+        default="general",
+        server_default="general",
+        nullable=False,
+        index=True
+    )
+    persona_type: Mapped[str] = mapped_column(
+        String(100),
+        default="teacher",
+        server_default="teacher",
+        nullable=False
+    )
     last_message_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

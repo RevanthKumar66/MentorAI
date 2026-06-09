@@ -52,7 +52,9 @@ class ChatRepository:
         model_name: str = "gemini-2.5-flash",
         system_prompt: Optional[str] = None,
         temperature: float = 0.7,
-        role: str = "general"
+        role: str = "general",
+        role_type: str = "general",
+        persona_type: str = "teacher"
     ) -> ChatSession:
         """Create a new ChatSession."""
         session = ChatSession(
@@ -61,11 +63,26 @@ class ChatRepository:
             model_name=model_name,
             system_prompt=system_prompt,
             temperature=temperature,
-            role=role
+            role=role,
+            role_type=role_type,
+            persona_type=persona_type
         )
         self.db.add(session)
         await self.db.flush()
         return session
+
+    async def link_session_to_workspace(self, session_id: uuid.UUID, collection_id: uuid.UUID) -> None:
+        """Link a ChatSession to a Collection (workspace) using collection_chats junction table."""
+        from app.models.collection import collection_chats
+        from sqlalchemy import insert
+        await self.db.execute(
+            insert(collection_chats).values(
+                collection_id=collection_id,
+                chat_session_id=session_id
+            )
+        )
+        await self.db.flush()
+
 
     async def add_message(
         self,

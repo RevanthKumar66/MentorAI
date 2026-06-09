@@ -8,15 +8,16 @@ import { chatApi } from '@/modules/chat/services/chat-api';
 import { documentApi } from '@/modules/documents/services/document-api';
 import { useWorkspaceStore } from '@/modules/documents/store/workspace-store';
 import { useChatStore } from '@/modules/chat/store/chat-store';
+import { MermaidRenderer } from '@/modules/chat/components/mermaid-renderer';
 import { 
   Folder, FileText, FileUp, Settings, BarChart2, MessageSquare, 
   Trash2, Plus, Edit2, Play, Check, AlertCircle, RefreshCw, Eye,
-  LayoutDashboard, BookOpen, Trash, CheckSquare
+  LayoutDashboard, BookOpen, Trash, CheckSquare, Workflow
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-type TabType = 'overview' | 'documents' | 'notes' | 'chats' | 'insights' | 'settings';
+type TabType = 'overview' | 'documents' | 'notes' | 'diagrams' | 'chats' | 'insights' | 'settings';
 
 export default function WorkspaceDashboardPage() {
   const params = useParams();
@@ -30,6 +31,8 @@ export default function WorkspaceDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [diagrams, setDiagrams] = useState<any[]>([]);
+  const [loadingDiagrams, setLoadingDiagrams] = useState(false);
 
   // Set as active workspace globally
   useEffect(() => {
@@ -68,13 +71,77 @@ export default function WorkspaceDashboardPage() {
   });
 
   // Filter chats belonging to this collection
-  const linkedChats = globalSessions ? globalSessions.filter(session => {
-    // If chat is linked to this collection
-    return true; // We fetch actual workspace chats from API or link them dynamically
-  }) : [];
+  const linkedChats = collection?.chats || [];
 
   // Filter documents in collection
   const documents = collection?.documents || [];
+
+  // Fetch and extract Mermaid diagrams from linked chats automatically
+  useEffect(() => {
+    let active = true;
+    if (linkedChats.length > 0) {
+      const fetchDiagrams = async () => {
+        setLoadingDiagrams(true);
+        try {
+          const allDiagrams: any[] = [];
+          
+          // Fetch all linked chats' detail histories in parallel
+          const sessionsDetails = await Promise.all(
+            linkedChats.map(chat => chatApi.getSessionDetails(chat.id).catch(() => null))
+          );
+
+          if (!active) return;
+
+          for (const session of sessionsDetails) {
+            if (!session || !session.messages) continue;
+            
+            // Extract all assistant messages with Mermaid code blocks
+            for (const msg of session.messages) {
+              if (msg.role !== 'assistant') continue;
+              
+              const mermaidRegex = /```mermaid\s*([\s\S]*?)```/g;
+              let match;
+              while ((match = mermaidRegex.exec(msg.content)) !== null) {
+                const code = match[1].trim();
+                allDiagrams.push({
+                  id: `${msg.id}-${allDiagrams.length}`,
+                  code,
+                  timestamp: msg.created_at,
+                  chatTitle: session.title || 'Untitled Discussion',
+                  chatId: session.id
+                });
+              }
+            }
+          }
+
+          // Sort by timestamp newest first
+          allDiagrams.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          
+          if (active) {
+            setDiagrams(allDiagrams);
+          }
+        } catch (err) {
+          console.error("Failed to load diagrams:", err);
+        } finally {
+          if (active) {
+            setLoadingDiagrams(false);
+          }
+        }
+      };
+
+      fetchDiagrams();
+    } else {
+      setDiagrams([]);
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [linkedChats]);
+
+  const handleRefreshDiagrams = () => {
+    queryClient.invalidateQueries({ queryKey: ['workspace-details', id] });
+  };
 
   // 2. Mutations
   const updateCollectionMutation = useMutation({
@@ -232,6 +299,7 @@ export default function WorkspaceDashboardPage() {
           { id: 'overview', label: 'Overview', icon: LayoutDashboard },
           { id: 'documents', label: 'Documents', icon: FileUp },
           { id: 'notes', label: 'Notes', icon: FileText },
+          { id: 'diagrams', label: 'Diagrams', icon: Workflow },
           { id: 'chats', label: 'Chats', icon: MessageSquare },
           { id: 'insights', label: 'Insights', icon: BarChart2 },
           { id: 'settings', label: 'Settings', icon: Settings },
@@ -262,27 +330,32 @@ export default function WorkspaceDashboardPage() {
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-5 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-650 uppercase">Knowledge Files</span>
+                  <span className="text-xs font-semibold text-slate-900">Knowledge Files</span>
                   <div className="text-2xl font-extrabold mt-1.5">{documents.length}</div>
                   <p className="text-[10px] text-slate-700 mt-1 font-mono">{formatBytes(totalDocSize)} indexed</p>
                 </div>
                 <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-5 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-655 uppercase">Scribbled Notes</span>
+                  <span className="text-xs font-semibold text-slate-900">Scribbled Notes</span>
                   <div className="text-2xl font-extrabold mt-1.5">{notes?.length || 0}</div>
-                  <p className="text-[10px] text-slate-700 mt-1">Markdown project details</p>
+                  <p className="text-[10px] text-slate-700 mt-1 font-mono">Markdown notes</p>
                 </div>
                 <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-5 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-655 uppercase">Workspace Discussions</span>
+                  <span className="text-xs font-semibold text-slate-900">Workflow Diagrams</span>
+                  <div className="text-2xl font-extrabold mt-1.5">{diagrams.length}</div>
+                  <p className="text-[10px] text-slate-700 mt-1 font-mono">Auto-extracted flows</p>
+                </div>
+                <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-5 shadow-sm">
+                  <span className="text-xs font-semibold text-slate-900">Discussions</span>
                   <div className="text-2xl font-extrabold mt-1.5">{linkedChats.length}</div>
-                  <p className="text-[10px] text-slate-700 mt-1">AI learning sessions</p>
+                  <p className="text-[10px] text-slate-700 mt-1 font-mono">AI learning sessions</p>
                 </div>
               </div>
 
               {/* Workspace details editing */}
               <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 shadow-sm space-y-4">
-                <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">Workspace Details</h3>
+                <h3 className="text-sm font-semibold text-slate-900">Workspace Details</h3>
                 <div className="space-y-3">
                   <div>
                     <label className="text-[10px] font-bold text-slate-700">Workspace Name</label>
@@ -320,7 +393,7 @@ export default function WorkspaceDashboardPage() {
             <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
-                  <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">Knowledge Documents</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">Knowledge Documents</h3>
                   <p className="text-[10px] text-slate-700 mt-0.5">Upload textbook PDFs, source code scripts, worksheets, and datasets.</p>
                 </div>
                 <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] border border-slate-300 bg-white hover:bg-slate-50 text-xs font-bold transition-colors shadow-sm cursor-pointer select-none">
@@ -352,7 +425,7 @@ export default function WorkspaceDashboardPage() {
 
               {/* Document List */}
               {documents.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-250 rounded-[6px]">
+                <div className="text-center py-12 border-2 border-dashed border-slate-300 rounded-[6px]">
                   <FileText className="w-8 h-8 text-slate-700 mx-auto mb-2.5" />
                   <p className="text-xs font-bold text-slate-900">No documents linked</p>
                   <p className="text-[10px] text-slate-700 mt-0.5">Attach documents to enable isolated RAG vector searches.</p>
@@ -412,12 +485,89 @@ export default function WorkspaceDashboardPage() {
             />
           )}
 
+          {/* DIAGRAMS TAB */}
+          {activeTab === 'diagrams' && (
+            <div className="space-y-6">
+              <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 shadow-sm space-y-6">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900">Workspace Diagrams</h3>
+                    <p className="text-[10px] text-slate-700 mt-0.5">
+                      Visual flowcharts, sequence diagrams, and block architecture automatically extracted from your workspace conversations.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleRefreshDiagrams}
+                    disabled={loadingDiagrams}
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 hover:border-slate-400 bg-white rounded-[6px] text-xs font-bold text-slate-800 transition-colors cursor-pointer select-none"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 text-slate-700 ${loadingDiagrams ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </button>
+                </div>
+
+                {loadingDiagrams ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-slate-700">
+                    <span className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-slate-900 animate-spin" />
+                    <p className="text-[10px] font-semibold text-slate-800 mt-2.5">Extracting diagrams from chat history...</p>
+                  </div>
+                ) : diagrams.length === 0 ? (
+                  <div className="text-center py-16 border-2 border-dashed border-slate-300 rounded-[6px]">
+                    <Workflow className="w-9 h-9 text-slate-700 mx-auto mb-3" />
+                    <p className="text-xs font-bold text-slate-900">No diagrams found</p>
+                    <p className="text-[10px] text-slate-700 mt-1 max-w-sm mx-auto leading-normal">
+                      Diagrams generated by the AI assistant in any linked discussions will automatically show up here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {diagrams.map((diagram) => (
+                      <div key={diagram.id} className="bg-slate-50/20 border border-slate-200 rounded-[12px] p-4 flex flex-col shadow-sm">
+                        {/* Diagram Header / Context */}
+                        <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[11px] font-semibold text-slate-800">Origin Chat</span>
+                            <h4 className="text-[11.5px] font-extrabold text-slate-900 truncate">{diagram.chatTitle}</h4>
+                          </div>
+                          <button
+                            onClick={() => handleSelectChat(diagram.chatId)}
+                            className="ml-2 flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-300 rounded-[6px] text-[10px] font-bold text-slate-800 transition-colors shadow-sm cursor-pointer shrink-0"
+                          >
+                            Open Discussion
+                          </button>
+                        </div>
+
+                        {/* Rendered Diagram */}
+                        <div className="flex-grow bg-white rounded-[8px] border border-slate-200/60 overflow-hidden flex flex-col justify-center min-h-[160px] p-2">
+                          <MermaidRenderer code={diagram.code} />
+                        </div>
+
+                        {/* Diagram Footer */}
+                        <div className="mt-3 text-right">
+                          <span className="text-[9px] font-mono text-slate-700">
+                            {new Date(diagram.timestamp).toLocaleString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* CHATS TAB */}
           {activeTab === 'chats' && (
             <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
-                  <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">Workspace Conversations</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">Workspace Conversations</h3>
                   <p className="text-[10px] text-slate-700 mt-0.5">Chats and sessions restricted strictly to this workspace context.</p>
                 </div>
                 <button
@@ -430,7 +580,7 @@ export default function WorkspaceDashboardPage() {
               </div>
 
               {linkedChats.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-250 rounded-[6px]">
+                <div className="text-center py-12 border-2 border-dashed border-slate-300 rounded-[6px]">
                   <MessageSquare className="w-8 h-8 text-slate-700 mx-auto mb-2.5" />
                   <p className="text-xs font-bold text-slate-900">No discussions started</p>
                   <p className="text-[10px] text-slate-700 mt-0.5">Launch a workspace-specific chat to converse with these files.</p>
@@ -467,7 +617,7 @@ export default function WorkspaceDashboardPage() {
             <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 shadow-sm space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
-                  <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">AI Workspace Insights</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">AI Workspace Insights</h3>
                   <p className="text-[10px] text-slate-700 mt-0.5">Semantic topics, terms, and summaries parsed by Gemini.</p>
                 </div>
                 <button
@@ -486,7 +636,7 @@ export default function WorkspaceDashboardPage() {
                   <p className="text-[10px] font-semibold text-slate-800 mt-2">Analyzing files and note corpus...</p>
                 </div>
               ) : !insights || insights.document_count === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-250 rounded-[6px]">
+                <div className="text-center py-12 border-2 border-dashed border-slate-300 rounded-[6px]">
                   <BarChart2 className="w-8 h-8 text-slate-700 mx-auto mb-2.5" />
                   <p className="text-xs font-bold text-slate-900">Insights unavailable</p>
                   <p className="text-[10px] text-slate-700 mt-0.5">Please upload processing documents to analyze topics.</p>
@@ -495,14 +645,14 @@ export default function WorkspaceDashboardPage() {
                 <div className="space-y-6">
                   {/* Summary */}
                   <div className="p-4 bg-[#F7F7F7] border border-slate-200 rounded-[8px]">
-                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wide">Knowledge Base Summary</span>
+                    <span className="text-xs font-semibold text-slate-800">Knowledge Base Summary</span>
                     <p className="text-xs text-slate-850 mt-1 leading-relaxed">{insights.summary}</p>
                   </div>
 
                   {/* Topics Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wide block">Primary Subject Topics</span>
+                      <span className="text-xs font-semibold text-slate-800 block">Primary Subject Topics</span>
                       <div className="flex flex-wrap gap-2">
                         {insights.topics.map((t, idx) => (
                           <span key={idx} className="px-3 py-1.5 bg-slate-100 border border-slate-250 text-xs font-bold text-slate-900 rounded-[6px]">
@@ -512,7 +662,7 @@ export default function WorkspaceDashboardPage() {
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wide block">Mentioned Concepts</span>
+                      <span className="text-xs font-semibold text-slate-800 block">Mentioned Concepts</span>
                       <div className="flex flex-wrap gap-2">
                         {insights.concepts.map((c, idx) => (
                           <span key={idx} className="px-3 py-1.5 bg-blue-50/50 border border-blue-200 text-xs font-bold text-blue-900 rounded-[6px]">
@@ -525,7 +675,7 @@ export default function WorkspaceDashboardPage() {
 
                   {/* Keywords Tag list */}
                   <div className="space-y-3">
-                    <span className="text-[9px] font-bold text-slate-700 uppercase tracking-wide block">Frequently Mentioned Terms</span>
+                    <span className="text-xs font-semibold text-slate-800 block">Frequently Mentioned Terms</span>
                     <div className="flex flex-wrap gap-1.5">
                       {insights.keywords.map((kw, idx) => (
                         <span key={idx} className="px-2.5 py-1 bg-[#F7F7F7] text-[10px] font-bold text-slate-800 rounded-full border border-slate-200">
@@ -542,7 +692,7 @@ export default function WorkspaceDashboardPage() {
           {/* SETTINGS TAB */}
           {activeTab === 'settings' && settings && (
             <div className="bg-white border border-[#E5E7EB] rounded-[8px] p-6 shadow-sm space-y-6">
-              <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide pb-4 border-b border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-900 pb-4 border-b border-slate-100">
                 Workspace Preferences
               </h3>
 
@@ -680,7 +830,7 @@ function NotesSplitPanel({ notes, onCreateNote, onDeleteNote, workspaceId }: Not
       {/* Left List Pane */}
       <div className="w-64 border-r border-[#E5E7EB] flex flex-col shrink-0">
         <div className="p-3 border-b border-[#E5E7EB] flex items-center justify-between shrink-0">
-          <span className="text-[10px] font-bold text-slate-850 uppercase tracking-wide">Notes ({notes.length})</span>
+          <span className="text-xs font-semibold text-slate-900">Notes ({notes.length})</span>
           <button 
             onClick={handleCreate}
             className="p-1 rounded-[4px] border border-slate-300 hover:bg-[#ecebea]/50 cursor-pointer"

@@ -62,7 +62,7 @@ export const CalloutRenderer: React.FC<CalloutRendererProps> = ({ type, children
     <div className={`p-4 rounded-[8px] border-l-[4px] border ${styles.bg} ${styles.border} my-4 shadow-[0_1px_2px_rgba(0,0,0,0.01)] flex gap-3 items-start`}>
       {styles.icon}
       <div className="flex-1 min-w-0 text-[12.5px] leading-relaxed">
-        <div className={`font-bold text-[11px] uppercase tracking-wide mb-0.5 ${styles.titleColor}`}>
+        <div className={`font-semibold text-xs mb-0.5 ${styles.titleColor}`}>
           {styles.title}
         </div>
         <div className={styles.text}>{children}</div>

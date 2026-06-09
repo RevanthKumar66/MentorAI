@@ -1,14 +1,8 @@
 import uuid
-from typing import Optional
 from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import BaseModel
-
-# Try importing pgvector
-try:
-    from pgvector.sqlalchemy import Vector
-except ImportError:
-    Vector = None
+from pgvector.sqlalchemy import Vector
 
 class DocumentChunk(BaseModel):
     """DocumentChunk database model representing chunked document texts and their embeddings."""
@@ -28,14 +22,8 @@ class DocumentChunk(BaseModel):
         nullable=False
     )
     # pgvector embedding for Postgres (Vector type)
-    # Falls back to standard Text representation for SQLite compatibility during create_all
     embedding = mapped_column(
-        Vector(768) if Vector is not None else Text,
-        nullable=True
-      )
-    # JSON-serialized embedding list of floats for SQLite fallback
-    embedding_json: Mapped[Optional[str]] = mapped_column(
-        Text,
+        Vector(768),
         nullable=True
     )
 
@@ -44,3 +32,4 @@ class DocumentChunk(BaseModel):
 
 from app.models.document import Document
 DocumentChunk.document = relationship("Document", back_populates="chunks")
+

@@ -91,7 +91,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
         {/* Social Media Sharing */}
         <div className="space-y-3">
-          <span className="text-[10px] font-bold text-slate-850 uppercase tracking-wider block mb-1">
+          <span className="text-xs font-semibold text-slate-850 block mb-1">
             Share to Socials
           </span>
 

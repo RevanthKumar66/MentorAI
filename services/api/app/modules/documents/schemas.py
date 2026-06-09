@@ -53,6 +53,7 @@ class CollectionResponse(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
     icon: Optional[str] = None
+    document_count: int = 0
     created_at: datetime
     updated_at: datetime
 
@@ -61,8 +62,12 @@ class CollectionResponse(BaseModel):
     }
 
 
+
+from app.modules.chat.schemas import ChatSessionResponse
+
 class CollectionDetailResponse(CollectionResponse):
     documents: List[DocumentResponse] = []
+    chats: List[ChatSessionResponse] = []
 
     model_config = {
         "from_attributes": True

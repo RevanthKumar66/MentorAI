@@ -58,7 +58,16 @@ export function useChat() {
 
   // 3. Create Session Mutation
   const createSessionMutation = useMutation({
-    mutationFn: (payload?: { model_name?: string }) => chatApi.createSession(payload),
+    mutationFn: (payload?: { 
+      model_name?: string;
+      title?: string;
+      system_prompt?: string | null;
+      temperature?: number;
+      role?: string;
+      role_type?: string;
+      persona_type?: string;
+      workspace_id?: string | null;
+    }) => chatApi.createSession(payload),
     onSuccess: (newSession) => {
       addSession(newSession);
       setActiveSessionId(newSession.id);
@@ -77,7 +86,7 @@ export function useChat() {
 
   // 4.5. Update Session Mutation
   const updateSessionMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { title?: string; role?: string; temperature?: number; is_archived?: boolean; model_name?: string } }) => 
+    mutationFn: ({ id, payload }: { id: string; payload: { title?: string; role?: string; role_type?: string; persona_type?: string; temperature?: number; is_archived?: boolean; model_name?: string } }) => 
       chatApi.updateSession(id, payload),
     onSuccess: (updatedSession) => {
       updateSession(updatedSession.id, updatedSession);
@@ -177,9 +186,9 @@ export function useChat() {
     loadingMessages,
     sendMessage,
     retry,
-    createSession: (model_name?: string) => createSessionMutation.mutate({ model_name }),
+    createSession: (payload?: { model_name?: string; title?: string; system_prompt?: string | null; temperature?: number; role?: string; role_type?: string; persona_type?: string; workspace_id?: string | null }) => createSessionMutation.mutate(payload),
     deleteSession: (id: string) => deleteSessionMutation.mutate(id),
-    updateSessionMeta: (id: string, payload: { title?: string; role?: string; temperature?: number; is_archived?: boolean; model_name?: string }) => 
+    updateSessionMeta: (id: string, payload: { title?: string; role?: string; role_type?: string; persona_type?: string; temperature?: number; is_archived?: boolean; model_name?: string }) => 
       updateSessionMutation.mutate({ id, payload }),
   };
 }

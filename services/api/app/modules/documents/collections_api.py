@@ -67,6 +67,7 @@ async def list_collections(
     try:
         stmt = (
             select(Collection)
+            .options(selectinload(Collection.documents))
             .where(Collection.user_id == current_user.id, Collection.is_deleted == False)
             .order_by(Collection.created_at.desc())
         )
@@ -95,7 +96,10 @@ async def get_collection_details(
     try:
         stmt = (
             select(Collection)
-            .options(selectinload(Collection.documents))
+            .options(
+                selectinload(Collection.documents),
+                selectinload(Collection.chats)
+            )
             .where(
                 Collection.id == collection_id,
                 Collection.user_id == current_user.id,
@@ -111,13 +115,15 @@ async def get_collection_details(
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        # Filter out soft-deleted documents
+        # Filter out soft-deleted documents & chats
         active_docs = [d for d in col.documents if not d.is_deleted]
+        active_chats = [c for c in col.chats if not c.is_deleted]
         
         # Build schema details
         data = CollectionDetailResponse.model_validate(col)
-        # Update documents list to only include active ones
+        # Update documents and chats list to only include active ones
         data.documents = [d for d in data.documents if d.id in [ad.id for ad in active_docs]]
+        data.chats = [c for c in data.chats if c.id in [ac.id for ac in active_chats]]
 
         return success_response(
             data=data.model_dump(),

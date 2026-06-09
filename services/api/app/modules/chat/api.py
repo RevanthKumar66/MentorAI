@@ -38,22 +38,40 @@ async def create_chat_session(
     service: ChatService = Depends(get_chat_service)
 ):
     """Creates a new ChatSession for the authenticated user."""
-    session = await service.create_session(
-        user_id=current_user.id,
-        title=payload.title,
-        model_name=payload.model_name,
-        system_prompt=payload.system_prompt,
-        temperature=payload.temperature,
-        role=payload.role
-    )
-    
-    # Serialize using Pydantic model
-    data = ChatSessionResponse.model_validate(session)
-    return success_response(
-        data=data.model_dump(),
-        message="Chat session created successfully",
-        status_code=status.HTTP_201_CREATED
-    )
+    try:
+        session = await service.create_session(
+            user_id=current_user.id,
+            title=payload.title,
+            model_name=payload.model_name,
+            system_prompt=payload.system_prompt,
+            temperature=payload.temperature,
+            role=payload.role,
+            role_type=payload.role_type or "general",
+            persona_type=payload.persona_type or "teacher",
+            workspace_id=payload.workspace_id
+        )
+        
+        # Serialize using Pydantic model
+        data = ChatSessionResponse.model_validate(session)
+        return success_response(
+            data=data.model_dump(),
+            message="Chat session created successfully",
+            status_code=status.HTTP_201_CREATED
+        )
+    except ValueError as val_err:
+        return error_response(
+            code="NOT_FOUND",
+            message=str(val_err),
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        logger.error(f"Error creating chat session: {str(e)}", exc_info=True)
+        return error_response(
+            code="CREATE_SESSION_FAILED",
+            message=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
 @router.get("/sessions")
 async def list_chat_sessions(
@@ -133,12 +151,15 @@ async def update_chat_session(
     session_id: uuid.UUID,
     payload: ChatSessionUpdate,
     current_user: User = Depends(get_current_user),
-    service: ChatService = Depends(get_chat_service),
-    db: AsyncSession = Depends(get_async_db)
+    service: ChatService = Depends(get_chat_service)
 ):
     """Updates metadata of a ChatSession (such as title, role, or temperature)."""
     try:
-        session = await service.get_session_details(session_id, current_user.id)
+        session = await service.update_session(
+            session_id=session_id,
+            user_id=current_user.id,
+            payload=payload
+        )
         if not session:
             return error_response(
                 code="NOT_FOUND",
@@ -146,40 +167,96 @@ async def update_chat_session(
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        if payload.title is not None:
-            session.title = payload.title
-        if payload.temperature is not None:
-            session.temperature = payload.temperature
-        if payload.is_archived is not None:
-            session.is_archived = payload.is_archived
-        if payload.model_name is not None:
-            session.model_name = payload.model_name
-        
-        if payload.role is not None:
-            session.role = payload.role
-            # Read new system prompt from file matching the role
-            prompt_file = f"{payload.role}_prompt.md" if payload.role != "general" else "system.md"
-            from app.modules.chat.service import read_prompt
-            new_prompt = read_prompt(prompt_file)
-            if new_prompt:
-                session.system_prompt = new_prompt
-                
-        await db.commit()
-        await db.refresh(session)
-        
         data = ChatSessionResponse.model_validate(session)
         return success_response(
             data=data.model_dump(),
             message="Chat session updated successfully"
         )
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating chat session: {str(e)}", exc_info=True)
         return error_response(
             code="UPDATE_SESSION_FAILED",
             message=str(e),
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+from pydantic import BaseModel
+from typing import Optional
+
+class MoveChatSessionPayload(BaseModel):
+    workspace_id: Optional[uuid.UUID] = None
+
+@router.post("/sessions/{session_id}/workspace")
+async def move_chat_session_to_workspace(
+    session_id: uuid.UUID,
+    payload: MoveChatSessionPayload,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Moves a ChatSession to a different workspace (collection) or removes it from all workspaces."""
+    try:
+        from sqlalchemy import select, delete, insert
+        # 1. Verify chat session ownership
+        stmt = select(ChatSession).where(
+            ChatSession.id == session_id,
+            ChatSession.user_id == current_user.id,
+            ChatSession.is_deleted == False
+        )
+        res = await db.execute(stmt)
+        session = res.scalar_one_or_none()
+        if not session:
+            return error_response(
+                code="NOT_FOUND",
+                message="Chat session not found or unauthorized",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        # 2. Delete existing workspace links
+        from app.models.collection import collection_chats
+        await db.execute(
+            delete(collection_chats).where(
+                collection_chats.c.chat_session_id == session_id
+            )
+        )
+
+        # 3. If a new workspace is specified, verify ownership and create new link
+        if payload.workspace_id:
+            from app.models.collection import Collection
+            col_stmt = select(Collection).where(
+                Collection.id == payload.workspace_id,
+                Collection.user_id == current_user.id,
+                Collection.is_deleted == False
+            )
+            col_res = await db.execute(col_stmt)
+            collection = col_res.scalar_one_or_none()
+            if not collection:
+                return error_response(
+                    code="NOT_FOUND",
+                    message="Workspace not found or unauthorized",
+                    status_code=status.HTTP_404_NOT_FOUND
+                )
+
+            await db.execute(
+                insert(collection_chats).values(
+                    collection_id=payload.workspace_id,
+                    chat_session_id=session_id
+                )
+            )
+
+        await db.commit()
+        return success_response(
+            message="Chat session moved to workspace successfully"
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Error moving chat session to workspace: {str(e)}", exc_info=True)
+        return error_response(
+            code="MOVE_FAILED",
+            message=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
 @router.get("/workspace/search")
 async def workspace_search(

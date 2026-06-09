@@ -2,7 +2,6 @@ import json
 import logging
 import uuid
 from typing import List, Optional
-import numpy as np
 from sqlalchemy import select, delete
 
 from app.core.config import settings
@@ -64,21 +63,13 @@ class RAGService:
             del_stmt = delete(DocumentChunk).where(DocumentChunk.document_id == document_id)
             await self.db.execute(del_stmt)
 
-            # 6. Save chunks and embeddings (PG pgvector vs. SQLite fallback)
-            is_postgres = False
-            try:
-                if hasattr(self.db, "bind") and self.db.bind is not None:
-                    is_postgres = "postgresql" in getattr(self.db.bind, "dialect", None).name.lower()
-            except Exception:
-                is_postgres = "postgresql" in settings.DATABASE_URL.lower() or "postgres" in settings.DATABASE_URL.lower()
-            
+            # 6. Save chunks and embeddings (always PostgreSQL pgvector)
             for idx, (chunk_text, emb) in enumerate(zip(chunks, embeddings)):
                 new_chunk = DocumentChunk(
                     document_id=document_id,
                     chunk_index=idx,
                     content=chunk_text,
-                    embedding=emb if is_postgres else None,
-                    embedding_json=json.dumps(emb) if not is_postgres else None
+                    embedding=emb
                 )
                 self.db.add(new_chunk)
 
@@ -150,86 +141,32 @@ class RAGService:
         if not active_doc_ids:
             return []
 
-        # 3. Perform similarity query
-        is_postgres = False
-        try:
-            if hasattr(self.db, "bind") and self.db.bind is not None:
-                is_postgres = "postgresql" in getattr(self.db.bind, "dialect", None).name.lower()
-        except Exception:
-            is_postgres = "postgresql" in settings.DATABASE_URL.lower() or "postgres" in settings.DATABASE_URL.lower()
+        # 3. Perform native PostgreSQL pgvector cosine similarity matching
+        # pgvector's cosine_distance is 1 - cosine_similarity. Sort ascending.
+        stmt = select(
+            DocumentChunk,
+            Document.original_file_name,
+            DocumentChunk.embedding.cosine_distance(query_vector).label("distance")
+        ).join(
+            Document, Document.id == DocumentChunk.document_id
+        ).where(
+            DocumentChunk.document_id.in_(active_doc_ids)
+        ).order_by(
+            "distance"
+        ).limit(k)
         
-        if is_postgres:
-            # Native PostgreSQL pgvector cosine similarity matching
-            # pgvector's cosine_distance is 1 - cosine_similarity. Sort ascending.
-            stmt = select(
-                DocumentChunk,
-                Document.original_file_name,
-                DocumentChunk.embedding.cosine_distance(query_vector).label("distance")
-            ).join(
-                Document, Document.id == DocumentChunk.document_id
-            ).where(
-                DocumentChunk.document_id.in_(active_doc_ids)
-            ).order_by(
-                "distance"
-            ).limit(k)
-            
-            result = await self.db.execute(stmt)
-            rows = result.all()
-            
-            similar_chunks = []
-            for chunk, file_name, dist in rows:
-                score = 1.0 - float(dist) if dist is not None else 0.0
-                similar_chunks.append({
-                    "chunk_id": chunk.id,
-                    "document_id": chunk.document_id,
-                    "file_name": file_name,
-                    "chunk_index": chunk.chunk_index,
-                    "content": chunk.content,
-                    "score": score
-                })
-            return similar_chunks
-        else:
-            # SQLite fallback: fetch all chunks, parse JSON, compute cosine similarity in Python/NumPy
-            stmt = select(
-                DocumentChunk,
-                Document.original_file_name
-            ).join(
-                Document, Document.id == DocumentChunk.document_id
-            ).where(
-                DocumentChunk.document_id.in_(active_doc_ids)
-            )
-            
-            result = await self.db.execute(stmt)
-            rows = result.all()
-            
-            q_arr = np.array(query_vector, dtype=np.float32)
-            q_norm = np.linalg.norm(q_arr)
-            
-            scored_chunks = []
-            for chunk, file_name in rows:
-                if not chunk.embedding_json:
-                    continue
-                try:
-                    c_emb = json.loads(chunk.embedding_json)
-                    c_arr = np.array(c_emb, dtype=np.float32)
-                    c_norm = np.linalg.norm(c_arr)
-                    if q_norm == 0 or c_norm == 0:
-                        sim = 0.0
-                    else:
-                        sim = float(np.dot(q_arr, c_arr) / (q_norm * c_norm))
-                    
-                    scored_chunks.append({
-                        "chunk_id": chunk.id,
-                        "document_id": chunk.document_id,
-                        "file_name": file_name,
-                        "chunk_index": chunk.chunk_index,
-                        "content": chunk.content,
-                        "score": sim
-                    })
-                except Exception as ex:
-                    logger.warning(f"Error parsing embedding_json for chunk {chunk.id}: {ex}")
-                    continue
-            
-            # Sort by similarity score descending
-            scored_chunks.sort(key=lambda x: x["score"], reverse=True)
-            return scored_chunks[:k]
+        result = await self.db.execute(stmt)
+        rows = result.all()
+        
+        similar_chunks = []
+        for chunk, file_name, dist in rows:
+            score = 1.0 - float(dist) if dist is not None else 0.0
+            similar_chunks.append({
+                "chunk_id": chunk.id,
+                "document_id": chunk.document_id,
+                "file_name": file_name,
+                "chunk_index": chunk.chunk_index,
+                "content": chunk.content,
+                "score": score
+            })
+        return similar_chunks

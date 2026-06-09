@@ -84,6 +84,14 @@ class Collection(BaseModel):
         cascade="all, delete-orphan"
     )
 
+    @property
+    def document_count(self) -> int:
+        try:
+            return sum(1 for d in self.documents if not d.is_deleted)
+        except Exception:
+            return 0
+
+
 from app.models.user import User
 from app.models.document import Document
 from app.models.chat import ChatSession

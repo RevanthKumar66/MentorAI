@@ -47,6 +47,7 @@ export const ChatLayout: React.FC = () => {
         onRetry={retry}
         onPrefillInput={setInputDraft}
         activeSessionId={activeSessionId || undefined}
+        onCreateSession={createSession}
       />
       
       {activeSessionId && (

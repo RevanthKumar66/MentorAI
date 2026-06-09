@@ -13,6 +13,7 @@ from app.common.responses import error_response, success_response
 from app.database.session import get_async_db
 from app.modules.auth.api import router as auth_router
 from app.modules.chat.api import router as chat_router
+from app.modules.chat.workspace_api import router as workspace_api_router
 from app.modules.documents.api import router as documents_router
 from app.modules.documents.collections_api import router as collections_router
 from app.modules.documents.settings_api import router as settings_router
@@ -127,6 +128,7 @@ async def readiness_check():
 # --- Routes Registration ---
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
+app.include_router(workspace_api_router, prefix="/api/v1")
 app.include_router(documents_router, prefix="/api/v1")
 app.include_router(collections_router, prefix="/api/v1")
 app.include_router(settings_router, prefix="/api/v1")

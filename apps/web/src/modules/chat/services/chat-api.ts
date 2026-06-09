@@ -12,6 +12,39 @@ async function getHeaders() {
   };
 }
 
+export interface UserPreferences {
+  default_role: string;
+  default_persona: string;
+  experience_level: string;
+  learning_style: string;
+  career_goal: string;
+  preferred_language: string;
+}
+
+export interface RoleAnalytics {
+  role: string;
+  messages_count: number;
+  tokens_used: number;
+  sessions_count: number;
+  last_used_at: string | null;
+}
+
+export interface UserAnalytics {
+  total_messages: number;
+  total_tokens: number;
+  total_documents: number;
+  roles_breakdown: RoleAnalytics[];
+  weekly_activity: { date: string; count: number }[];
+}
+
+export interface AIPromptItem {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  avatar_emoji?: string;
+}
+
 export const chatApi = {
   async listSessions(): Promise<ChatSession[]> {
     const headers = await getHeaders();
@@ -44,7 +77,12 @@ export const chatApi = {
     model_name?: string;
     system_prompt?: string | null;
     temperature?: number;
+    role?: string;
+    role_type?: string;
+    persona_type?: string;
+    workspace_id?: string | null;
   }): Promise<ChatSession> {
+
     const headers = await getHeaders();
     const res = await fetch(`${API_BASE_URL}/chat/sessions`, {
       method: 'POST',
@@ -72,6 +110,8 @@ export const chatApi = {
   async updateSession(sessionId: string, payload: {
     title?: string;
     role?: string;
+    role_type?: string;
+    persona_type?: string;
     temperature?: number;
     is_archived?: boolean;
     model_name?: string;
@@ -87,5 +127,73 @@ export const chatApi = {
     }
     const body = await res.json();
     return body.data;
+  },
+
+  async getRoles(): Promise<AIPromptItem[]> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/roles`, {
+      method: 'GET',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to fetch roles');
+    const body = await res.json();
+    return body.data || [];
+  },
+
+  async getPersonas(): Promise<AIPromptItem[]> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/personas`, {
+      method: 'GET',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to fetch personas');
+    const body = await res.json();
+    return body.data || [];
+  },
+
+  async getPreferences(): Promise<UserPreferences> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/preferences`, {
+      method: 'GET',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to fetch preferences');
+    const body = await res.json();
+    return body.data;
+  },
+
+  async updatePreferences(payload: Partial<UserPreferences>): Promise<UserPreferences> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/preferences`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Failed to update preferences');
+    const body = await res.json();
+    return body.data;
+  },
+
+  async getAnalytics(): Promise<UserAnalytics> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/analytics`, {
+      method: 'GET',
+      headers,
+    });
+    if (!res.ok) throw new Error('Failed to fetch analytics');
+    const body = await res.json();
+    return body.data;
+  },
+
+  async moveSession(sessionId: string, workspaceId: string | null): Promise<void> {
+    const headers = await getHeaders();
+    const res = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}/workspace`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ workspace_id: workspaceId }),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to move chat session');
+    }
   },
 };

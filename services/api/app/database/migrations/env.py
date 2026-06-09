@@ -44,37 +44,15 @@ def do_run_migrations(connection):
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    primary_url = config.get_main_option("sqlalchemy.url")
-    use_fallback = False
-    
-    try:
-        connectable = async_engine_from_config(
-            config.get_section(config.config_ini_section, {}),
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
-        )
-        async with connectable.connect() as connection:
-            await connection.run_sync(do_run_migrations)
-        await connectable.dispose()
-    except Exception as e:
-        print(f"Primary database connection failed: {e}. Falling back to SQLite.")
-        use_fallback = True
+    connectable = async_engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+    await connectable.dispose()
 
-    if use_fallback:
-        import os
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-        fallback_db_path = os.path.join(base_dir, "mentorai.db")
-        fallback_db_url = f"sqlite+aiosqlite:///{fallback_db_path}"
-        
-        config.set_main_option("sqlalchemy.url", fallback_db_url)
-        connectable = async_engine_from_config(
-            config.get_section(config.config_ini_section, {}),
-            prefix="sqlalchemy.",
-            poolclass=pool.NullPool,
-        )
-        async with connectable.connect() as connection:
-            await connection.run_sync(do_run_migrations)
-        await connectable.dispose()
 
 if context.is_offline_mode():
     run_migrations_offline()
