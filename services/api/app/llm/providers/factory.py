@@ -20,7 +20,7 @@ class LLMProviderFactory:
     """Factory for instantiating the LLM gateway providers."""
 
     @staticmethod
-    def get_provider(provider_name: str = None) -> BaseLLMProvider:
+    def get_provider(provider_name: str | None = None) -> BaseLLMProvider:
         """Get the configured or requested provider instance.
         
         Args:

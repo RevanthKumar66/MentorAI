@@ -751,7 +751,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         </Link>
         <Link href="/profile" className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-semibold transition-colors hover:bg-slate-755 mt-auto mb-1 overflow-hidden border border-slate-300" title="Profile">
           {user?.user_metadata?.avatar_url
-            ? <Image src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" width={28} height={28} unoptimized />
+            ? <Image src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" width={28} height={28} unoptimized referrerPolicy="no-referrer" />
             : initials}
         </Link>
       </aside>
@@ -1092,7 +1092,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           <Link href="/profile" className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-[8px] hover:bg-[#ecebea]/55 text-slate-900 hover:text-slate-955 transition-colors">
             <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-semibold shrink-0 select-none overflow-hidden border border-slate-300">
               {user?.user_metadata?.avatar_url
-                ? <Image src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" width={28} height={28} unoptimized />
+                ? <Image src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" width={28} height={28} unoptimized referrerPolicy="no-referrer" />
                 : initials}
             </div>
             <div className="min-w-0 flex-1">

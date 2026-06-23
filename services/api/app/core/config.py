@@ -56,5 +56,9 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: Optional[str] = None
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434")
 
+    # Email Notifications
+    RESEND_API_KEY: Optional[str] = None
+    NEXT_PUBLIC_APP_URL: str = Field(default="http://localhost:3000")
+
 # Initialize settings singleton
 settings = Settings()

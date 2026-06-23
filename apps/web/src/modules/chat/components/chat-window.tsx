@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { 
   ArrowRight, Terminal, Code2, Code, User, Share2, Settings, LogOut, ChevronDown, 
   RotateCcw, Database, Search, Star, GraduationCap, Briefcase, BarChart3, FileText, Plus,
-  GitFork, MessageSquare, HelpCircle, Compass, Users, Target, Atom, ClipboardCheck, Rocket, LucideIcon, Sparkles
+  GitFork, MessageSquare, HelpCircle, Compass, Users, Target, Atom, ClipboardCheck, Rocket, LucideIcon, Sparkles, Zap
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
@@ -225,7 +225,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <div className="w-[34px] h-[34px] rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold tracking-wide select-none group-hover:bg-slate-700 transition-colors overflow-hidden border border-slate-350 shrink-0">
               {user?.user_metadata?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                <img src={user.user_metadata.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
                 initials
               )}
@@ -479,12 +479,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       title: "Document Assistant",
                       desc: "Answering context-anchored questions based on your files.",
                       icon: <FileText className="w-4 h-4 text-rose-600" />
+                    },
+                    {
+                      key: "lifesaver",
+                      title: "Momentum AI",
+                      desc: "AI productivity companion that helps you plan, prioritize, and complete goals before deadlines are missed.",
+                      icon: <Zap className="w-4 h-4 text-indigo-600" />
                     }
                   ].map((mentor) => (
                     <div
                       key={mentor.key}
                       onClick={() => {
-                        if (onCreateSession) {
+                        if (mentor.key === 'lifesaver') {
+                          router.push('/lifesaver');
+                        } else if (onCreateSession) {
                           onCreateSession({
                             role_type: mentor.key,
                             role: mentor.key,

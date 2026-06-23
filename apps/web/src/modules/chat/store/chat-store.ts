@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Citation } from '../components/sources-panel';
 
 export interface ChatSession {
   id: string;
@@ -25,7 +26,7 @@ export interface ChatMessage {
   output_tokens: number;
   latency_ms: number;
   created_at: string;
-  citations?: any[];
+  citations?: Citation[];
 }
 
 

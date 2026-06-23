@@ -29,7 +29,8 @@ class RateLimiter:
         # Identify requester by user ID from authenticated state (request.state.user)
         # or fall back to client IP address.
         user = getattr(request.state, "user", None)
-        identifier = f"user:{user.id}" if user else f"ip:{request.client.host}"
+        client_host = request.client.host if request.client else "unknown"
+        identifier = f"user:{user.id}" if user else f"ip:{client_host}"
         
         key = f"rate_limit:{request.url.path}:{identifier}"
         

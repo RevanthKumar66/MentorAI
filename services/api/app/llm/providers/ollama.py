@@ -31,7 +31,7 @@ class OllamaLLMProvider(BaseLLMProvider):
         if system_prompt:
             payload_messages.insert(0, {"role": "system", "content": system_prompt})
 
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": payload_messages,
             "stream": False
@@ -79,7 +79,7 @@ class OllamaLLMProvider(BaseLLMProvider):
         if system_prompt:
             payload_messages.insert(0, {"role": "system", "content": system_prompt})
 
-        payload = {
+        payload: Dict[str, Any] = {
             "model": model,
             "messages": payload_messages,
             "stream": True
@@ -95,7 +95,7 @@ class OllamaLLMProvider(BaseLLMProvider):
                     input_tokens = 0
                     output_tokens = 0
 
-                    async for line in response.iter_lines():
+                    async for line in response.aiter_lines():
                         if not line:
                             continue
                         

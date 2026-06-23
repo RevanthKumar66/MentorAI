@@ -32,8 +32,8 @@ async def get_current_user(
         raise AuthException("Bearer token payload missing sub or email claims.")
         
     user_metadata = payload.get("user_metadata", {})
-    full_name = user_metadata.get("full_name")
-    avatar_url = user_metadata.get("avatar_url")
+    full_name = user_metadata.get("full_name") or user_metadata.get("name")
+    avatar_url = user_metadata.get("avatar_url") or user_metadata.get("picture")
     
     repo = AuthRepository(db)
     service = AuthService(repo)

@@ -24,4 +24,15 @@ class AuthService:
                 full_name=full_name,
                 avatar_url=avatar_url
             )
+        else:
+            # Sync user profile attributes if they are missing or if avatar_url is a placeholder
+            updated = False
+            if avatar_url and (not user.avatar_url or "avatar.vercel.sh" in user.avatar_url):
+                user.avatar_url = avatar_url
+                updated = True
+            if full_name and not user.full_name:
+                user.full_name = full_name
+                updated = True
+            if updated:
+                await self.repo.db.flush()
         return user

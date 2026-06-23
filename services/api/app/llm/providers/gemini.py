@@ -21,7 +21,7 @@ class GeminiLLMProvider(BaseLLMProvider):
             logger.warning("Gemini API key is not configured or using placeholder.")
         self.client = genai.Client(api_key=api_key)
 
-    def _prepare_contents(self, messages: List[Dict[str, str]]) -> List[types.Content]:
+    def _prepare_contents(self, messages: List[Dict[str, str]]) -> List[Any]:
         """Converts user/assistant message dicts to Google GenAI Content types."""
         contents = []
         for msg in messages:

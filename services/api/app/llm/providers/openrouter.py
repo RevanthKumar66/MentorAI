@@ -15,9 +15,7 @@ class OpenRouterLLMProvider(BaseLLMProvider):
     """OpenRouter LLM Provider integration gateway."""
 
     def __init__(self):
-        self.api_key = settings.SUPABASE_ANON_KEY  # Default placeholder or fallback
-        # Let's add OpenRouter API key setting to config if it was added or fetch from env
-        self.api_key = os.getenv("OPENROUTER_API_KEY", "")
+        self.api_key = settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
 
     def _prepare_headers(self) -> Dict[str, str]:
@@ -111,7 +109,7 @@ class OpenRouterLLMProvider(BaseLLMProvider):
                     input_tokens = 0
                     output_tokens = 0
 
-                    async for line in response.iter_lines():
+                    async for line in response.aiter_lines():
                         if not line:
                             continue
                         if line.startswith("data: "):

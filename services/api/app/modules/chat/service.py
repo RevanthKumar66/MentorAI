@@ -53,15 +53,22 @@ class ChatService:
     async def create_session(
         self,
         user_id: uuid.UUID,
-        title: str = "New Conversation",
-        model_name: str = "gemini-2.5-flash",
+        title: Optional[str] = None,
+        model_name: Optional[str] = None,
         system_prompt: Optional[str] = None,
-        temperature: float = 0.7,
-        role: str = "general",
-        role_type: str = "general",
-        persona_type: str = "teacher",
+        temperature: Optional[float] = None,
+        role: Optional[str] = None,
+        role_type: Optional[str] = None,
+        persona_type: Optional[str] = None,
         workspace_id: Optional[uuid.UUID] = None
     ) -> ChatSession:
+        title = title or "New Conversation"
+        model_name = model_name or "gemini-2.5-flash"
+        temperature = temperature if temperature is not None else 0.7
+        role = role or "general"
+        role_type = role_type or "general"
+        persona_type = persona_type or "teacher"
+
         if role_type == "general" and role != "general":
             role_type = role
 
@@ -350,9 +357,9 @@ class ChatService:
             return_exceptions=True
         )
 
-        user_settings = settings_res if not isinstance(settings_res, Exception) else None
-        user_prefs = prefs_res if not isinstance(prefs_res, Exception) else None
-        workspace_ctx = ctx_res if not isinstance(ctx_res, Exception) else None
+        user_settings = settings_res if not isinstance(settings_res, BaseException) else None
+        user_prefs = prefs_res if not isinstance(prefs_res, BaseException) else None
+        workspace_ctx = ctx_res if not isinstance(ctx_res, BaseException) else None
 
         if isinstance(settings_res, Exception):
             logger.error(f"Failed to fetch user settings: {settings_res}")

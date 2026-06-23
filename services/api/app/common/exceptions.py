@@ -6,7 +6,7 @@ class AppException(Exception):
     error_code: str = "INTERNAL_SERVER_ERROR"
     message: str = "An unexpected error occurred."
 
-    def __init__(self, message: str = None, error_code: str = None, status_code: int = None):
+    def __init__(self, message: str | None = None, error_code: str | None = None, status_code: int | None = None):
         super().__init__(message or self.message)
         if message:
             self.message = message

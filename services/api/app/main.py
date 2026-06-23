@@ -20,6 +20,7 @@ from app.modules.documents.settings_api import router as settings_router
 from app.modules.documents.notes_api import router as notes_router
 from app.modules.documents.workspace_settings_api import router as workspace_settings_router
 from app.modules.billing.api import router as billing_router
+from app.modules.lifesaver.api import router as lifesaver_router
 
 
 # Configure structured logging
@@ -135,4 +136,7 @@ app.include_router(settings_router, prefix="/api/v1")
 app.include_router(notes_router, prefix="/api/v1")
 app.include_router(workspace_settings_router, prefix="/api/v1")
 app.include_router(billing_router, prefix="/api/v1")
+app.include_router(lifesaver_router, prefix="/api/v1")
+
+# Trigger reload with Supabase
 

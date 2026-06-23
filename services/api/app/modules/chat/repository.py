@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -113,7 +113,7 @@ class ChatRepository:
         await self.db.execute(
             update(ChatSession)
             .where(ChatSession.id == session_id)
-            .values(last_message_at=datetime.utcnow())
+            .values(last_message_at=datetime.now(timezone.utc))
         )
         
         await self.db.flush()
@@ -137,7 +137,7 @@ class ChatRepository:
         )
         result = await self.db.execute(stmt)
         await self.db.flush()
-        return result.rowcount > 0
+        return getattr(result, "rowcount", 0) > 0
 
     async def archive_session(self, session_id: uuid.UUID, user_id: uuid.UUID, archive: bool = True) -> bool:
         """Archive or unarchive a session."""
@@ -148,4 +148,4 @@ class ChatRepository:
         )
         result = await self.db.execute(stmt)
         await self.db.flush()
-        return result.rowcount > 0
+        return getattr(result, "rowcount", 0) > 0

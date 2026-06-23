@@ -316,7 +316,7 @@ function ProfileForm({ dbUser }: { dbUser: DBUser }) {
             <div className="w-14 h-14 rounded-full bg-slate-950 text-white flex items-center justify-center text-lg font-extrabold select-none overflow-hidden shrink-0 border border-slate-300">
               {dbUser.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={dbUser.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                <img src={dbUser.avatar_url} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
                 initials
               )}

@@ -1,4 +1,4 @@
-from typing import BinaryIO
+from typing import BinaryIO, Any
 from app.integrations.supabase.client import get_supabase_client
 
 class SupabaseStorageHelper:
@@ -7,7 +7,7 @@ class SupabaseStorageHelper:
     def __init__(self):
         self.client = get_supabase_client()
 
-    def upload_file(self, bucket: str, path: str, file_obj: BinaryIO, content_type: str) -> str:
+    def upload_file(self, bucket: str, path: str, file_obj: Any, content_type: str) -> Any:
         """Uploads a file to a specified Supabase storage bucket."""
         res = self.client.storage.from_(bucket).upload(
             path=path,

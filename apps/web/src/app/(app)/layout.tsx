@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-screen w-screen justify-center items-center bg-[#fcfbf9] text-slate-800">
         <div className="flex flex-col items-center gap-2">
           <span className="w-6 h-6 rounded-full border-2 border-slate-200 border-t-slate-900 animate-spin" />
-          <p className="text-slate-500 text-xs mt-2 font-medium">Loading MentorAI OS...</p>
+          <p className="text-slate-500 text-xs mt-2 font-medium">Launching Momentum AI...</p>
         </div>
       </div>
     );
@@ -68,18 +68,22 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const isLifeSaver = pathname?.startsWith('/lifesaver');
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-800">
-      <ChatSidebar
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        loading={loadingSessions}
-        onSelectSession={handleSelectSession}
-        onCreateSession={handleCreateSession}
-        onDeleteSession={handleDeleteSession}
-        onUpdateSessionTitle={(id, title) => updateSessionMeta(id, { title })}
-        onArchiveSession={(id, archive) => updateSessionMeta(id, { is_archived: archive })}
-      />
+      {!isLifeSaver && (
+        <ChatSidebar
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          loading={loadingSessions}
+          onSelectSession={handleSelectSession}
+          onCreateSession={handleCreateSession}
+          onDeleteSession={handleDeleteSession}
+          onUpdateSessionTitle={(id, title) => updateSessionMeta(id, { title })}
+          onArchiveSession={(id, archive) => updateSessionMeta(id, { is_archived: archive })}
+        />
+      )}
       <div className="flex-1 min-w-0 h-full relative">
         {children}
       </div>
