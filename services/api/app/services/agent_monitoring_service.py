@@ -215,7 +215,7 @@ Return ONLY the raw JSON list. If no triggers match, return []. Do not wrap in m
         try:
             res_llm = await provider.generate(
                 messages=[{"role": "user", "content": prompt}],
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 temperature=0.2
             )
             text_resp = res_llm.get("text", "").strip()

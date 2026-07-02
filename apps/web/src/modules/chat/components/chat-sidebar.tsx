@@ -560,7 +560,17 @@ const NewChatModal: React.FC<NewChatModalProps> = ({ onClose, onCreate, collecti
   );
 };
 
-/* ──────────────────────────── Main sidebar ──────────────────────────────── */
+const AI_MENTORS = [
+  { id: 'learning', name: 'Learning Mentor', icon: GraduationCap, href: '/mentors/learning' },
+  { id: 'resume', name: 'AI Resume Preparation', icon: ClipboardCheck, href: '/mentors/resume' },
+  { id: 'coding', name: 'Coding Assistant', icon: Code, href: '/mentors/coding' },
+  { id: 'dsa', name: 'DSA Coach', icon: GitFork, href: '/mentors/dsa' },
+  { id: 'research', name: 'Research Analyst', icon: Search, href: '/mentors/research' },
+  { id: 'career', name: 'Career Advisor', icon: Briefcase, href: '/mentors/career' },
+  { id: 'data-science', name: 'Data Scientist', icon: BarChart3, href: '/mentors/data-science' },
+  { id: 'documents', name: 'Document Assistant', icon: FileText, href: '/mentors/documents' },
+  { id: 'momentum', name: 'Momentum AI', icon: Sparkles, href: '/mentors/momentum' },
+];
 
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   sessions,
@@ -578,6 +588,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const { activeWorkspaceId, setActiveWorkspaceId, collections, setCollections } = useWorkspaceStore();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [mentorsExpanded, setMentorsExpanded] = useState(true);
   const filteredSessions = sessions.filter((session) =>
     (session.title || 'New Conversation').toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -885,6 +896,41 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
               })
             )}
           </div>
+        </div>
+
+        <div className="mx-3.5 my-0.5 border-t border-slate-200" />
+
+        {/* AI MENTORS Section */}
+        <div className="flex-none flex flex-col min-h-0">
+          <div 
+            onClick={() => setMentorsExpanded(!mentorsExpanded)}
+            className="px-3.5 py-1.5 flex items-center justify-between hover:bg-[#ecebea]/45 rounded-[6px] cursor-pointer select-none transition-colors text-slate-800"
+          >
+            <span className="text-xs font-semibold text-slate-900">AI Mentors</span>
+            {mentorsExpanded ? (
+              <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+            )}
+          </div>
+
+          {mentorsExpanded && (
+            <div className="px-3 pb-2 space-y-0.5 max-h-[180px] overflow-y-auto scrollbar-thin">
+              {AI_MENTORS.map((m) => {
+                const Icon = m.icon;
+                return (
+                  <Link
+                    key={m.id}
+                    href={m.href}
+                    className="flex items-center gap-2.5 px-3 py-1 rounded-[6px] text-[11px] font-semibold text-slate-800 hover:text-slate-955 hover:bg-[#ecebea]/55 transition-colors border border-transparent"
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0 text-slate-650" />
+                    <span>{m.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="mx-3.5 my-0.5 border-t border-slate-200" />

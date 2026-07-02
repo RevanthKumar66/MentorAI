@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { 
   ArrowRight, Terminal, Code2, Code, User, Share2, Settings, LogOut, ChevronDown, 
-  RotateCcw, Database, Search, Star, GraduationCap, Briefcase, BarChart3, FileText, Plus,
+  RotateCcw, Database, Search, Star, GraduationCap, Briefcase, BarChart3, FileText, Plus, FileSpreadsheet,
   GitFork, MessageSquare, HelpCircle, Compass, Users, Target, Atom, ClipboardCheck, Rocket, LucideIcon, Sparkles, Zap
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
@@ -445,6 +445,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                       icon: <GraduationCap className="w-4 h-4 text-emerald-600" />
                     },
                     {
+                      key: "resume",
+                      title: "AI Resume Preparation",
+                      desc: "ATS optimization, resume builder, cover letters, and gap analysis.",
+                      icon: <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+                    },
+                    {
                       key: "coding",
                       title: "Coding Assistant",
                       desc: "Production-grade code drafting, debugging, and review guidelines.",
@@ -490,8 +496,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     <div
                       key={mentor.key}
                       onClick={() => {
-                        if (mentor.key === 'lifesaver') {
-                          router.push('/lifesaver');
+                        const routeMap: Record<string, string> = {
+                          lifesaver: '/mentors/momentum',
+                          learning: '/mentors/learning',
+                          resume: '/mentors/resume',
+                          coding: '/mentors/coding',
+                          dsa: '/mentors/dsa',
+                          research: '/mentors/research',
+                          career: '/mentors/career',
+                          datascience: '/mentors/data-science',
+                          document: '/mentors/documents'
+                        };
+                        const targetRoute = routeMap[mentor.key];
+                        if (targetRoute) {
+                          router.push(targetRoute);
                         } else if (onCreateSession) {
                           onCreateSession({
                             role_type: mentor.key,

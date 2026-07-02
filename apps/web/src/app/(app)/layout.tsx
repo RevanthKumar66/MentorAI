@@ -61,18 +61,27 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const handleCreateSession = async (options?: any) => {
+  const handleCreateSession = async (options?: {
+    model_name?: string;
+    title?: string;
+    system_prompt?: string | null;
+    temperature?: number;
+    role?: string;
+    role_type?: string;
+    persona_type?: string;
+    workspace_id?: string | null;
+  }) => {
     createSession(options);
     if (pathname !== '/chat') {
       router.push('/chat');
     }
   };
 
-  const isLifeSaver = pathname?.startsWith('/lifesaver');
+  const isMentorWorkspace = pathname?.startsWith('/mentors') || pathname?.startsWith('/lifesaver');
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-800">
-      {!isLifeSaver && (
+      {!isMentorWorkspace && (
         <ChatSidebar
           sessions={sessions}
           activeSessionId={activeSessionId}

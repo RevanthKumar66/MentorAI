@@ -105,7 +105,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
           </div>
         </div>
 
-        <Link href={`/lifesaver/goals/${goal.id}`} className="block group">
+        <Link href={`/mentors/momentum/goals/${goal.id}`} className="block group">
           <h4 className="text-xs font-semibold text-slate-900 leading-snug tracking-tight mb-1 truncate group-hover:text-slate-700 transition-colors" title={goal.title}>
             {goal.title}
           </h4>
@@ -116,7 +116,7 @@ export const GoalCard: React.FC<GoalCardProps> = ({
       </div>
 
       {/* Progress & Bottom Row */}
-      <Link href={`/lifesaver/goals/${goal.id}`} className="space-y-3 block">
+      <Link href={`/mentors/momentum/goals/${goal.id}`} className="space-y-3 block">
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[9px] font-semibold text-slate-800">
             <span>Progress</span>

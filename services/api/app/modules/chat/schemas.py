@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 class ChatSessionCreate(BaseModel):
     title: Optional[str] = Field(default="New Conversation", max_length=255)
-    model_name: Optional[str] = Field(default="gemini-2.5-flash")
+    model_name: Optional[str] = Field(default="gemini-2.0-flash")
     system_prompt: Optional[str] = None
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
     role: Optional[str] = Field(default="general")

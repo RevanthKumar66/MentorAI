@@ -6,6 +6,7 @@ from app.llm.providers.base import BaseLLMProvider
 from app.llm.providers.gemini import GeminiLLMProvider
 from app.llm.providers.openrouter import OpenRouterLLMProvider
 from app.llm.providers.ollama import OllamaLLMProvider
+from app.llm.providers.huggingface import HuggingFaceLLMProvider
 from app.llm.exceptions import LLMProviderException
 
 logger = logging.getLogger("mentorai-os.llm.factory")
@@ -13,7 +14,8 @@ logger = logging.getLogger("mentorai-os.llm.factory")
 _PROVIDERS: Dict[str, Type[BaseLLMProvider]] = {
     "gemini": GeminiLLMProvider,
     "openrouter": OpenRouterLLMProvider,
-    "ollama": OllamaLLMProvider
+    "ollama": OllamaLLMProvider,
+    "huggingface": HuggingFaceLLMProvider,
 }
 
 class LLMProviderFactory:

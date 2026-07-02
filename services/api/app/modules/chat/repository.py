@@ -49,7 +49,7 @@ class ChatRepository:
         self,
         user_id: uuid.UUID,
         title: str = "New Conversation",
-        model_name: str = "gemini-2.5-flash",
+        model_name: str = "gemini-2.0-flash",
         system_prompt: Optional[str] = None,
         temperature: float = 0.7,
         role: str = "general",

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { CalendarConnection } from '../types/scheduling';
 import { calendarIntegrationService } from '../services/CalendarIntegrationService';
-import { Zap, Calendar, Key, AlertCircle, RefreshCw, LogOut, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Zap, Calendar, Key, AlertCircle, RefreshCw, LogOut, CheckCircle2, ShieldAlert, Mail, CheckSquare } from 'lucide-react';
 
 interface Props {
   connection: CalendarConnection | null;
@@ -36,17 +36,17 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          scopes: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events',
+          scopes: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/gmail.labels',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
           },
-          redirectTo: window.location.origin + '/lifesaver/scheduling'
+          redirectTo: window.location.origin + '/mentors/momentum/scheduling'
         }
       });
       if (oauthError) throw oauthError;
     } catch (err: any) {
-      setError(err.message || 'Failed to connect calendar');
+      setError(err.message || 'Failed to connect workspace');
       setIsConnecting(false);
     }
   };
@@ -58,7 +58,7 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
       setEmailInput('');
       onUpdate();
     } catch (err: any) {
-      setError(err.message || 'Failed to disconnect calendar');
+      setError(err.message || 'Failed to disconnect workspace');
     }
   };
 
@@ -67,9 +67,10 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
     setError(null);
     try {
       await calendarIntegrationService.sync();
+      // Sync email dashboard too if needed, done via backend sync pipeline
       onUpdate();
     } catch (err: any) {
-      setError(err.message || 'Failed to sync calendar');
+      setError(err.message || 'Failed to sync workspace');
     } finally {
       setIsSyncing(false);
     }
@@ -79,8 +80,8 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
     <div className="bg-white border border-slate-200 rounded-[12px] p-6 space-y-4 shadow-xs">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-slate-500" />
-          Google Calendar Integration
+          <Zap className="w-4 h-4 text-slate-500" />
+          Google Workspace Connection
         </h3>
         {connection && connection.id ? (
           <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 border border-emerald-300 text-emerald-700 rounded-[6px] flex items-center gap-1">
@@ -124,7 +125,7 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
               </div>
             </div>
             <p className="text-[10.5px] text-slate-500 leading-normal">
-              Syncs deadlines, retrieves meetings, detects availability windows, and manages task slots.
+              Syncs deadlines, retrieves meetings, detects availability windows, triages emails, drafts AI replies, and manages task slots.
             </p>
           </form>
         ) : (
@@ -132,9 +133,9 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
             <div className="flex items-start gap-2.5">
               <ShieldAlert className="w-4 h-4 text-slate-800 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-slate-900">Google OAuth Permissions Consent</h4>
+                <h4 className="text-xs font-bold text-slate-900">Google OAuth Workspace Consent</h4>
                 <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
-                  Momentum AI requires access to your Google account with the following scopes:
+                  Momentum AI will connect to your Google Workspace with the following scopes:
                 </p>
               </div>
             </div>
@@ -142,15 +143,19 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
             <div className="pl-6 space-y-1.5 border-l-2 border-slate-300">
               <div className="text-[10.5px] font-semibold text-slate-700 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-slate-500" />
-                <span>calendar.readonly <span className="font-normal text-slate-500">(View calendar metadata)</span></span>
+                <span>calendar <span className="font-normal text-slate-500">(Read/Write calendar events)</span></span>
               </div>
               <div className="text-[10.5px] font-semibold text-slate-700 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-slate-500" />
-                <span>calendar.events <span className="font-normal text-slate-500">(Modify events & appointments)</span></span>
+                <span>gmail.readonly <span className="font-normal text-slate-500">(Read emails & attachments)</span></span>
               </div>
               <div className="text-[10.5px] font-semibold text-slate-700 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-slate-500" />
-                <span>calendar.events.readonly <span className="font-normal text-slate-500">(Read agenda meetings)</span></span>
+                <span>gmail.modify <span className="font-normal text-slate-500">(Archive, label, and delete emails)</span></span>
+              </div>
+              <div className="text-[10.5px] font-semibold text-slate-700 flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-slate-500" />
+                <span>gmail.compose <span className="font-normal text-slate-500">(Compose response drafts)</span></span>
               </div>
             </div>
 
@@ -188,13 +193,39 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
           <div className="bg-slate-50/50 border border-slate-200 rounded-[8px] p-3.5 flex flex-col gap-2">
             <div className="flex justify-between items-center text-xs">
               <span className="font-bold text-slate-800">Connected Account</span>
-              <span className="font-semibold text-slate-900 font-mono">{connection.email}</span>
+              <span className="font-semibold text-slate-900 font-mono text-[11px]">{connection.email}</span>
             </div>
-            <div className="flex justify-between items-center text-[10.5px]">
-              <span className="text-slate-500">Last Sync Time</span>
-              <span className="text-slate-700 font-medium">
-                {connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleTimeString() : 'Never'}
-              </span>
+
+            <div className="border-t border-slate-100 my-1 pt-1.5 space-y-1.5">
+              <div className="flex justify-between items-center text-[10.5px]">
+                <span className="text-slate-550 flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" /> Calendar</span>
+                <span className="text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px]">Synced</span>
+              </div>
+              <div className="flex justify-between items-center text-[10.5px]">
+                <span className="text-slate-550 flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-400" /> Gmail</span>
+                <span className="text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px]">Synced</span>
+              </div>
+              <div className="flex justify-between items-center text-[10.5px]">
+                <span className="text-slate-550 flex items-center gap-1.5"><CheckSquare className="w-3.5 h-3.5 text-slate-400" /> Tasks</span>
+                <span className="text-emerald-700 font-medium bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px]">Synced</span>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 my-1 pt-1.5 space-y-1.5">
+              <div className="flex justify-between items-center text-[10.5px]">
+                <span className="text-slate-550">Status</span>
+                <span className="text-emerald-700 font-bold">Connected</span>
+              </div>
+              <div className="flex justify-between items-center text-[10.5px]">
+                <span className="text-slate-550">Permissions</span>
+                <span className="text-slate-700 font-medium">Calendar, Gmail, Tasks</span>
+              </div>
+              <div className="flex justify-between items-center text-[10.5px]">
+                <span className="text-slate-550">Last Sync</span>
+                <span className="text-slate-700 font-medium">
+                  {connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleString() : 'Never'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -203,10 +234,10 @@ export function CalendarConnectionCard({ connection, onUpdate }: Props) {
               type="button"
               onClick={handleSync}
               disabled={isSyncing}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-slate-250 bg-white hover:bg-slate-50 text-slate-850 rounded-[8px] text-xs font-semibold transition-all cursor-pointer disabled:opacity-55"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 border border-slate-250 bg-white hover:bg-slate-55 text-slate-850 rounded-[8px] text-xs font-semibold transition-all cursor-pointer disabled:opacity-55"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-slate-650 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Syncing...' : 'Sync Calendar'}
+              {isSyncing ? 'Syncing...' : 'Sync Workspace'}
             </button>
             <button
               type="button"

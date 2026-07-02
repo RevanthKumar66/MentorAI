@@ -1,3 +1,9 @@
+# ============================================================
+# Momentum AI — Next.js Frontend Dockerfile
+# ============================================================
+# Multi-stage build for development (hot reload via volume mount)
+# ============================================================
+
 FROM node:20-alpine AS base
 
 # Install pnpm
@@ -5,22 +11,37 @@ RUN corepack enable && corepack prepare pnpm@10.0.0 --activate
 
 WORKDIR /app
 
-# Copy root monorepo package and workspaces spec
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml /app/
-COPY apps/web/package.json /app/apps/web/
-COPY packages/ /app/packages/
+# ── Stage 1: Install Dependencies ───────────────────────────
+FROM base AS deps
 
-# Install workspace dependencies
+# Copy monorepo manifests
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/ ./packages/
+
+# Install all workspace dependencies (cached layer)
 RUN pnpm install --frozen-lockfile
 
-# Copy application source code
-COPY apps/web/ /app/apps/web/
+# ── Stage 2: Development Runner ─────────────────────────────
+FROM base AS runner
+
+WORKDIR /app
+
+# Copy installed node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+
+# Copy source (will be overridden by volume mount in docker-compose)
+COPY apps/web/ ./apps/web/
+COPY packages/ ./packages/
+COPY package.json pnpm-workspace.yaml ./
 
 WORKDIR /app/apps/web
 
-# Build Next.js app
-RUN pnpm build
-
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Dev server with hot reload
+CMD ["pnpm", "dev"]

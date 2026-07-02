@@ -21,7 +21,7 @@ class ChatSession(BaseModel):
     )
     model_name: Mapped[str] = mapped_column(
         String(100),
-        default="gemini-2.5-flash",
+        default="gemini-2.0-flash",
         nullable=False
     )
     system_prompt: Mapped[Optional[str]] = mapped_column(

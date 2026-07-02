@@ -20,7 +20,7 @@ class OutputProcessor:
         self, 
         query: str, 
         provider=None, 
-        model: str = "gemini-2.5-flash",
+        model: str = "gemini-2.0-flash",
         user_settings: Optional[Any] = None
     ) -> Dict[str, Any]:
         """Runs classifier, planner, selector to build response specifications."""

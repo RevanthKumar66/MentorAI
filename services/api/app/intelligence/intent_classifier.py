@@ -9,7 +9,7 @@ class IntentClassifier:
     def __init__(self, provider=None):
         self.provider = provider
 
-    async def classify(self, query: str, provider=None, model: str = "gemini-2.5-flash") -> Dict[str, Any]:
+    async def classify(self, query: str, provider=None, model: str = "gemini-2.0-flash") -> Dict[str, Any]:
         """Classifies query and returns intent name, confidence, and complexity."""
         if not provider:
             from app.llm.providers.factory import LLMProviderFactory

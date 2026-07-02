@@ -28,7 +28,7 @@ class UsageService:
         input_rate = 0.075  # $0.075 / 1M tokens
         output_rate = 0.30  # $0.30 / 1M tokens
 
-        if "gemini-2.5-flash" in model_lower:
+        if "gemini-2.0-flash" in model_lower:
             input_rate = 0.075
             output_rate = 0.30
         elif "deepseek" in model_lower:

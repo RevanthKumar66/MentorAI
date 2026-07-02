@@ -10,7 +10,6 @@ import {
   Terminal, 
   Code2, 
   Database, 
-  BookOpen, 
   Cpu, 
   FileText, 
   Lock, 
@@ -19,7 +18,13 @@ import {
   Workflow, 
   Layers,
   Menu,
-  X
+  X,
+  GraduationCap,
+  Trophy,
+  Briefcase,
+  Zap,
+  BarChart3,
+  Search
 } from 'lucide-react';
 
 const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -137,8 +142,6 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-8 text-[13.5px] font-medium text-slate-600">
             <a href="#features" className="hover:text-[#111111] transition-colors">Features</a>
             <a href="#use-cases" className="hover:text-[#111111] transition-colors">Use Cases</a>
-            <a href="#roadmap" className="hover:text-[#111111] transition-colors">Roadmap</a>
-            <a href="#tech-stack" className="hover:text-[#111111] transition-colors">Infrastructure</a>
             <a href="#faq" className="hover:text-[#111111] transition-colors">FAQ</a>
             <a href="https://github.com" className="hover:text-[#111111] transition-colors flex items-center gap-1.5">
               <GithubIcon className="w-4 h-4" />
@@ -183,8 +186,6 @@ export default function Home() {
           >
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#111111]">Features</a>
             <a href="#use-cases" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#111111]">Use Cases</a>
-            <a href="#roadmap" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#111111]">Roadmap</a>
-            <a href="#tech-stack" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#111111]">Infrastructure</a>
             <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#111111]">FAQ</a>
             <hr className="border-slate-200 my-1" />
             <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="hover:text-[#111111] py-1">Log in</Link>
@@ -203,26 +204,87 @@ export default function Home() {
       {/* ── Semantic Main Wrapper ────────────────────────────────────── */}
       <main className="flex-grow w-full relative z-10 flex flex-col">
         
-        {/* ── 2. Hero Section ──────────────────────────────────────────── */}
-        <section className="relative max-w-7xl mx-auto px-8 pt-16 pb-12 text-center flex-1 flex flex-col justify-center">
-          
-          {/* Centered Medium Logo Symbol above Hero */}
-          <div className="flex justify-center mb-6 select-none animate-fade-in">
-            <Image 
-              src="/mentorai-symbol-only.svg" 
-              alt="MentorAI Logo" 
-              width={64}
-              height={64}
-              className="w-16 h-16 hover:rotate-12 transition-transform duration-300" 
-            />
+        <section className="relative w-full overflow-hidden">
+          {/* Animated AI Waves Background converging to Center Logo */}
+          <div 
+            className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden flex items-center justify-center"
+            style={{
+              maskImage: 'radial-gradient(circle, transparent 35%, black 75%)',
+              WebkitMaskImage: 'radial-gradient(circle, transparent 35%, black 75%)'
+            }}
+          >
+            <svg className="w-full h-full min-h-[500px]" viewBox="0 0 1000 500" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <style>{`
+                @keyframes flowToCenter {
+                  0% { stroke-dashoffset: 24; }
+                  100% { stroke-dashoffset: 0; }
+                }
+                .converging-line-solid {
+                  stroke: #111111;
+                  stroke-width: 1px;
+                  fill: none;
+                  opacity: 0.10;
+                }
+                .converging-line-dashed {
+                  stroke: #111111;
+                  stroke-width: 1.2px;
+                  fill: none;
+                  opacity: 0.22;
+                  stroke-dasharray: 6 8;
+                  animation: flowToCenter 4s linear infinite;
+                }
+              `}</style>
+              
+              {/* Corner 1: Top-Left to Center */}
+              <path className="converging-line-dashed" d="M 0,0 C 200,50 350,150 500,250" />
+              <path className="converging-line-solid" d="M 0,100 C 200,120 350,180 500,250" />
+              
+              {/* Corner 2: Top-Right to Center */}
+              <path className="converging-line-dashed" d="M 1000,0 C 800,50 650,150 500,250" />
+              <path className="converging-line-solid" d="M 1000,100 C 800,120 650,180 500,250" />
+
+              {/* Corner 3: Bottom-Left to Center */}
+              <path className="converging-line-dashed" d="M 0,500 C 200,450 350,350 500,250" />
+              <path className="converging-line-solid" d="M 0,400 C 200,380 350,320 500,250" />
+
+              {/* Corner 4: Bottom-Right to Center */}
+              <path className="converging-line-dashed" d="M 1000,500 C 800,450 650,350 500,250" />
+              <path className="converging-line-solid" d="M 1000,400 C 800,380 650,320 500,250" />
+
+              {/* Top & Bottom Edges */}
+              <path className="converging-line-solid" d="M 500,0 C 480,80 490,160 500,250" />
+              <path className="converging-line-dashed" d="M 250,0 C 300,80 400,160 500,250" />
+              <path className="converging-line-dashed" d="M 750,0 C 700,80 600,160 500,250" />
+              
+              <path className="converging-line-solid" d="M 500,500 C 480,420 490,340 500,250" />
+              <path className="converging-line-dashed" d="M 250,500 C 300,420 400,340 500,250" />
+              <path className="converging-line-dashed" d="M 750,500 C 700,420 600,340 500,250" />
+
+              {/* Left & Right Edges */}
+              <path className="converging-line-solid" d="M 0,250 C 150,230 300,240 500,250" />
+              <path className="converging-line-solid" d="M 1000,250 C 850,230 700,240 500,250" />
+            </svg>
           </div>
 
-          <h1 className="text-4xl sm:text-7xl font-bold text-[#111111] tracking-tight leading-[1.08] max-w-5xl mx-auto">
-            Learn faster. Build better. Think deeper.
-          </h1>
+          <div className="relative max-w-7xl mx-auto px-8 pt-16 pb-12 text-center flex-1 flex flex-col justify-center z-10">
+            
+            {/* Centered Large Logo Symbol above Hero */}
+            <div className="flex justify-center mb-6 select-none animate-fade-in">
+              <Image 
+                src="/mentorai-symbol-only.svg" 
+                alt="MentorAI Logo" 
+                width={80}
+                height={80}
+                className="w-20 h-20 hover:rotate-12 transition-transform duration-300" 
+              />
+            </div>
+  
+            <h1 className="text-3xl sm:text-5xl font-bold text-[#111111] tracking-tight leading-[1.08] max-w-5xl mx-auto">
+              Meet your specialized AI Mentors.
+            </h1>
           
-          <p className="mt-6 text-sm sm:text-base text-[#52525B] max-w-xl mx-auto font-normal leading-relaxed">
-            One AI Workspace for Learning, Coding, Research, and Career Growth.
+          <p className="mt-5 text-xs sm:text-sm text-[#52525B] max-w-xl mx-auto font-normal leading-relaxed">
+            A unified operating system of expert AI agents and interactive sandboxes for learning, coding, analytics, and goal execution.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -254,7 +316,8 @@ export default function Home() {
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-slate-400" /> Researchers</span>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* ── 3. Interactive Product Preview ─────────────────────────────── */}
         <section id="preview" className="max-w-7xl mx-auto px-8 py-10 w-full">
@@ -465,45 +528,76 @@ export default function Home() {
         {/* ── 4. Why MentorAI Exists ───────────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-8 py-10 w-full text-center">
           <div className="max-w-3xl mx-auto space-y-4">
-            <span className="text-sm font-medium text-[#6B7280] tracking-widest block">Workflow Fragmentation</span>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111111]">Five tools for one workflow.</h2>
+            <span className="text-sm font-medium text-[#6B7280] tracking-widest block uppercase">Unified Mentorship Hub</span>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111111]">A Single Platform for Every Workflow</h2>
             <p className="text-sm text-[#52525B] font-normal mt-4 leading-relaxed max-w-2xl mx-auto">
-              Stop switching tabs. MentorAI combines chat, documents, code, and datasets into one seamless workspace.
+              Stop switching tabs between ChatGPT, LeetCode, Notion, Jupyter, and scattered PDF readers. MentorAI OS converges specialized AI mentors into one unified workspace.
             </p>
           </div>
 
           {/* Workflow Diagram */}
           <div className="mt-14 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-5 gap-3 items-center justify-center select-none text-xs text-[#52525B] font-medium font-sans">
-            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-2 transition-all hover:scale-[1.02] hover:shadow-md">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#10a37f" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/>
-              </svg>
-              <span className="text-[9px] text-slate-400 font-semibold tracking-wider">Concept Learning</span>
+            
+            {/* Box 1: Students */}
+            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-3 transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] w-full justify-center">
+              <div className="w-8 h-8 rounded-[6px] bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                <GraduationCap className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[7.5px] font-bold text-indigo-500 uppercase tracking-wider block">Students</span>
+                <span className="text-[10px] font-bold text-slate-800 block mt-0.5">Learning Mentor</span>
+                <span className="text-[8px] text-slate-400 block mt-0.5 font-medium">Replaces ChatGPT</span>
+              </div>
             </div>
-            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-2 transition-all hover:scale-[1.02] hover:shadow-md">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#FFA116" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/>
-              </svg>
-              <span className="text-[9px] text-slate-400 font-semibold tracking-wider">DSA Practice</span>
+
+            {/* Box 2: Job Seekers */}
+            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-3 transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] w-full justify-center">
+              <div className="w-8 h-8 rounded-[6px] bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                <Trophy className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[7.5px] font-bold text-indigo-500 uppercase tracking-wider block">Job Seekers</span>
+                <span className="text-[10px] font-bold text-slate-800 block mt-0.5">DSA Coach</span>
+                <span className="text-[8px] text-slate-400 block mt-0.5 font-medium">Replaces LeetCode</span>
+              </div>
             </div>
-            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-2 transition-all hover:scale-[1.02] hover:shadow-md">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/>
-              </svg>
-              <span className="text-[9px] text-slate-400 font-semibold tracking-wider">Notes & KB</span>
+
+            {/* Box 3: Researchers */}
+            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-3 transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] w-full justify-center">
+              <div className="w-8 h-8 rounded-[6px] bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
+                <Search className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[7.5px] font-bold text-indigo-500 uppercase tracking-wider block">Researchers</span>
+                <span className="text-[10px] font-bold text-slate-800 block mt-0.5">Research Assistant</span>
+                <span className="text-[8px] text-slate-400 block mt-0.5 font-medium">Replaces Notion</span>
+              </div>
             </div>
-            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-2 transition-all hover:scale-[1.02] hover:shadow-md">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#F37626" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7.157 22.201A1.784 1.799 0 0 1 5.374 24a1.784 1.799 0 0 1-1.784-1.799 1.784 1.799 0 0 1 1.784-1.799 1.784 1.799 0 0 1 1.783 1.799zM20.582 1.427a1.415 1.427 0 0 1-1.415 1.428 1.415 1.427 0 0 1-1.416-1.428A1.415 1.427 0 0 1 19.167 0a1.415 1.427 0 0 1 1.415 1.427zM4.992 3.336A1.047 1.056 0 0 1 3.946 4.39a1.047 1.056 0 0 1-1.047-1.055A1.047 1.056 0 0 1 3.946 2.28a1.047 1.056 0 0 1 1.046 1.056zm7.336 1.517c3.769 0 7.06 1.38 8.768 3.424a9.363 9.363 0 0 0-3.393-4.547 9.238 9.238 0 0 0-5.377-1.728A9.238 9.238 0 0 0 6.95 3.73a9.363 9.363 0 0 0-3.394 4.547c1.713-2.04 5.004-3.424 8.772-3.424zm.001 13.295c-3.768 0-7.06-1.381-8.768-3.425a9.363 9.363 0 0 0 3.394 4.547A9.238 9.238 0 0 0 12.33 21a9.238 9.238 0 0 0 5.377-1.729 9.363 9.363 0 0 0 3.393-4.547c-1.712 2.044-5.003 3.425-8.772 3.425Z"/>
-              </svg>
-              <span className="text-[9px] text-slate-400 font-semibold tracking-wider">Datasets Analysis</span>
+
+            {/* Box 4: Analysts */}
+            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm flex flex-col items-center gap-3 transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] w-full justify-center">
+              <div className="w-8 h-8 rounded-[6px] bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                <BarChart3 className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[7.5px] font-bold text-indigo-500 uppercase tracking-wider block">Analysts</span>
+                <span className="text-[10px] font-bold text-slate-800 block mt-0.5">Data Science Mentor</span>
+                <span className="text-[8px] text-slate-400 block mt-0.5 font-medium">Replaces Jupyter</span>
+              </div>
             </div>
-            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm col-span-2 sm:col-span-1 flex flex-col items-center gap-2 transition-all hover:scale-[1.02] hover:shadow-md">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#EC1C24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.63 15.3c-.71-.745-2.166-1.17-4.224-1.17-1.1 0-2.377.106-3.761.354a19.443 19.443 0 0 1-2.307-2.661c-.532-.71-.994-1.49-1.42-2.236.817-2.484 1.207-4.507 1.207-5.962 0-1.632-.603-3.336-2.342-3.336-.532 0-1.065.32-1.349.781-.78 1.384-.425 4.4.923 7.381a60.277 60.277 0 0 1-1.703 4.507c-.568 1.349-1.207 2.733-1.917 4.01C2.834 18.53.314 20.34.03 21.758c-.106.533.071 1.03.462 1.42.142.107.639.533 1.49.533 2.59 0 5.323-4.188 6.707-6.707 1.065-.355 2.13-.71 3.194-.994a34.963 34.963 0 0 1 3.407-.745c2.732 2.448 5.145 2.839 6.352 2.839 1.49 0 2.023-.604 2.2-1.1.32-.64.106-1.349-.213-1.704zm-1.42 1.03c-.107.532-.64.887-1.384.887-.213 0-.39-.036-.604-.071-1.348-.32-2.626-.994-3.903-2.059a17.717 17.717 0 0 1 2.98-.248c.746 0 1.385.035 1.81.142.497.106 1.278.426 1.1 1.348zm-7.524-1.668a38.01 38.01 0 0 0-2.945.674 39.68 39.68 0 0 0-2.52.745 40.05 40.05 0 0 0 1.207-2.555c.426-.994.78-2.023 1.136-2.981.354.603.745 1.207 1.135 1.739a50.127 50.127 0 0 0 1.987 2.378zM10.038 1.46a.768.768 0 0 1 .674-.425c.745 0 .887.851.887 1.526 0 1.135-.355 2.874-.958 4.861-1.03-2.768-1.1-5.074-.603-5.962zM6.134 17.997c-1.81 2.981-3.549 4.826-4.613 4.826a.872.872 0 0 1-.532-.177c-.213-.213-.32-.461-.249-.745.213-1.065 2.271-2.555 5.394-3.904Z"/>
-              </svg>
-              <span className="text-[9px] text-slate-400 font-semibold tracking-wider">Scattered Docs</span>
+
+            {/* Box 5: Developers */}
+            <div className="p-4 rounded-[8px] bg-white border border-slate-200/50 shadow-sm col-span-2 sm:col-span-1 flex flex-col items-center gap-3 transition-all hover:scale-[1.02] hover:shadow-md min-h-[120px] w-full justify-center">
+              <div className="w-8 h-8 rounded-[6px] bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+                <Code2 className="w-4.5 h-4.5" />
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[7.5px] font-bold text-indigo-500 uppercase tracking-wider block">Developers</span>
+                <span className="text-[10px] font-bold text-slate-800 block mt-0.5">Coding Mentor</span>
+                <span className="text-[8px] text-slate-400 block mt-0.5 font-medium">Replaces Scattered PDFs</span>
+              </div>
             </div>
+
           </div>
 
           <div className="mt-8 flex justify-center">
@@ -557,103 +651,215 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 6. One Workspace. Multiple AI Capabilities (Feature Grid) ─── */}
-        <section id="features" className="max-w-7xl mx-auto px-8 py-10 w-full">
-          <div className="text-center mb-10">
-            <span className="text-sm font-medium text-[#6B7280] tracking-widest">Built to Perform</span>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111111] mt-2">One Workspace. Multiple AI Capabilities.</h2>
-            <p className="text-sm text-[#52525B] mt-3 max-w-lg mx-auto">
-              A comprehensive suite of functional agents designed to accelerate your day-to-day workflow.
-            </p>
+        {/* ── 6. Meet Your AI Mentors (Mentor Catalog & Execution Environments) ─── */}
+        <section id="features" className="max-w-7xl mx-auto px-8 py-12 w-full space-y-20">
+          
+          {/* Mentors Grid */}
+          <div className="space-y-10">
+            <div className="text-center">
+              <span className="text-sm font-medium text-[#6B7280] tracking-widest block uppercase">Meet Your AI Mentors</span>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#111111] mt-2">A Unified OS of Specialized Experts</h2>
+              <p className="text-sm text-[#52525B] mt-3 max-w-xl mx-auto">
+                Access a coordinated suite of specialized AI mentors, each trained for specific domains, logic pipelines, and study patterns.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Card 1: Learning Mentor */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-[6px] bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-4">
+                    <GraduationCap className="w-4.5 h-4.5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">Learning Mentor</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
+                    Calibrates custom study roadmaps, translates materials into local language dialects, and adapts explanation complexity based on your educational style.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider uppercase">Adaptive Study Center</span>
+              </div>
+
+              {/* Card 2: Coding Assistant */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-[6px] bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4">
+                    <Code2 className="w-4.5 h-4.5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">Coding Mentor</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
+                    Reviews code files, highlights logic errors, refactors complex components, recommends design patterns, and executes tests in interactive runtimes.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider uppercase">Interactive Sandbox</span>
+              </div>
+
+              {/* Card 3: DSA Coach */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-[6px] bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 mb-4">
+                    <Trophy className="w-4.5 h-4.5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">DSA Coach</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
+                    Traces algorithms step-by-step, analyzes time and space complexity, runs dry tests, and recommends interview patterns.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider uppercase">Algorithmic Prep</span>
+              </div>
+
+              {/* Card 4: Data Science Copilot */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-[6px] bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4">
+                    <BarChart3 className="w-4.5 h-4.5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">Data Science Mentor</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
+                    Ingests CSV tables, suggests feature engineering targets, performs automated exploratory data analysis (EDA), and compiles regression plots inline.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider uppercase">Dataset Analytics</span>
+              </div>
+
+              {/* Card 5: Research Assistant */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-[6px] bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 mb-4">
+                    <Search className="w-4.5 h-4.5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">Research Assistant</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
+                    Synthesizes academic documentation, parses complex cross-references, extracts structured tables, and mines information from loaded context files.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider uppercase">Information Mining</span>
+              </div>
+
+              {/* Card 6: Career & Resume Mentor */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="w-8 h-8 rounded-[6px] bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mb-4">
+                    <Briefcase className="w-4.5 h-4.5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm">Career & Resume Coach</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
+                    Critiques engineering resumes, analyzes keyword matches for target roles, and runs interactive, mock technical and behavioral interviews.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider uppercase">Interview Readiness</span>
+              </div>
+
+              {/* Card 7: Momentum AI (Master Orchestrator) */}
+              <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-350 transition-all flex flex-col md:col-span-3 items-center text-center justify-between">
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-[8px] bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-4">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm md:text-md">Momentum AI (Autonomous Orchestrator)</h3>
+                  <p className="text-xs text-[#52525B] mt-2 leading-relaxed max-w-2xl text-center">
+                    Our master coordination engine. Momentum AI orchestrates all underlying mentors to breakdown complex user goals, schedule focus sessions, sync tasks to your calendar, and predict productivity risks.
+                  </p>
+                </div>
+                <span className="text-[10px] font-semibold text-teal-500 mt-4 block tracking-wider uppercase">Master Execution Engine</span>
+              </div>
+
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Card 1: AI Mentor */}
-            <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="w-8 h-8 rounded-[6px] bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4">
-                  <BookOpen className="w-4.5 h-4.5" />
-                </div>
-                <h3 className="font-bold text-slate-900 text-sm">AI Mentor</h3>
-                <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
-                  Generates personalized learning paths, custom study roadmaps, practice drills, and summaries based on your goals.
-                </p>
-              </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Concept Tutoring</span>
+          {/* Runtimes Grid */}
+          <div className="space-y-10 pt-8 border-t border-slate-200/50">
+            <div className="text-center">
+              <span className="text-sm font-medium text-[#6B7280] tracking-widest block uppercase">Interactive Sandboxes</span>
+              <h2 className="text-3xl font-bold tracking-tight text-[#111111] mt-2">Multi-Language Execution Environments</h2>
+              <p className="text-sm text-[#52525B] mt-3 max-w-xl mx-auto">
+                No local dependencies required. Run your code in sandbox runtime environments managed directly inside the browser.
+              </p>
             </div>
 
-            {/* Card 2: Coding Assistant */}
-            <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="w-8 h-8 rounded-[6px] bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-4">
-                  <Code2 className="w-4.5 h-4.5" />
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-6xl mx-auto">
+              
+              {/* Env 1: Python */}
+              <div className="p-5 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-between shadow-sm transition-all hover:scale-[1.01] hover:shadow-md min-h-[170px]">
+                <div className="flex flex-col items-center gap-3">
+                  <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.9 0C8.5 0 7.7.1 6.5.6c-1.9.8-2.3 2.1-2.4 4.5v1.8h4.5v.7H2.1C.9 8.2.1 9 .1 10.9v4.5c0 1.9.8 2.7 2 2.7h1.9v-2.7c0-1.5 1.2-2.7 2.7-2.7h5.4c1.5 0 2.7-1.2 2.7-2.7V4.7c0-1.5-1.2-2.7-2.7-2.7L11.9 0z" fill="#3776AB"/>
+                    <path d="M12.1 24c3.4 0 4.2-.1 5.4-.6 1.9-.8 2.3-2.1 2.4-4.5v-1.8H15.4v-.7h6.5c1.2-.6 2-1.4 2-3.3V8.6c0-1.9-.8-2.7-2-2.7H20v2.7c0 1.5-1.2 2.7-2.7 2.7h-5.4c-1.5 0-2.7 1.2-2.7 2.7v5.4c0 1.5 1.2 2.7 2.7 2.7L12.1 24z" fill="#FFE873"/>
+                    <circle cx="8.5" cy="3.5" r="0.75" fill="#FFF"/>
+                    <circle cx="15.5" cy="20.5" r="0.75" fill="#111"/>
+                  </svg>
+                  <div>
+                    <span className="text-[11.5px] font-bold text-slate-800 block">Python Sandbox</span>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-normal">Execute scripts, filter data tables, and run math targets.</p>
+                  </div>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">Coding Assistant</h3>
-                <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
-                  Writes refactored code, generates clean codebases, runs reviews, suggests design patterns, and highlights structural bugs.
-                </p>
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider block mt-3 uppercase">Python 3.11</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Code Generation</span>
-            </div>
 
-            {/* Card 3: DSA Coach */}
-            <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="w-8 h-8 rounded-[6px] bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 mb-4">
-                  <Terminal className="w-4.5 h-4.5" />
+              {/* Env 2: TypeScript */}
+              <div className="p-5 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-between shadow-sm transition-all hover:scale-[1.01] hover:shadow-md min-h-[170px]">
+                <div className="flex flex-col items-center gap-3">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="#3178C6" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="24" height="24" rx="4" />
+                    <path d="M13.2 16.5c.3.5.7.8 1.4.8.6 0 1-.3 1-.7 0-.5-.4-.7-1.1-1-1-.4-2.2-.7-2.2-2.1 0-1.2 1-2.1 2.4-2.1 1.2 0 2 .5 2.5 1.5l-1.3.8c-.3-.5-.7-.8-1.2-.8-.5 0-.8.3-.8.6 0 .4.4.6 1.1.9 1.2.4 2.2.8 2.2 2 0 1.4-1.1 2.2-2.6 2.2-1.5 0-2.4-.8-2.8-1.7l1.3-.5zM7.2 9.4h5.2v1.3H9.8v7.2H8.5V10.7H7.2V9.4z" fill="#FFF"/>
+                  </svg>
+                  <div>
+                    <span className="text-[11.5px] font-bold text-slate-800 block">TypeScript Runtime</span>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-normal">Test JS scopes, closures, async callbacks, and types.</p>
+                  </div>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">DSA Coach</h3>
-                <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
-                  Traces algorithms step-by-step, analyzes time and space complexity, runs dry tests, and recommends interview patterns.
-                </p>
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider block mt-3 uppercase">Node v18</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Algorithm Prep</span>
-            </div>
 
-            {/* Card 4: Knowledge Base */}
-            <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="w-8 h-8 rounded-[6px] bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mb-4">
-                  <FileText className="w-4.5 h-4.5" />
+              {/* Env 3: C++ */}
+              <div className="p-5 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-between shadow-sm transition-all hover:scale-[1.01] hover:shadow-md min-h-[170px]">
+                <div className="flex flex-col items-center gap-3">
+                  <svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z" fill="#00599C"/>
+                    <path d="M16 11h-3V8h-2v3H8v2h3v3h2v-3h3v-2zm5 0h-3V8h-2v3h-3v2h3v3h2v-3h3v-2z" fill="#FFF" opacity="0.8"/>
+                    <path d="M12.5 7.5A4.5 4.5 0 0 0 8 12a4.5 4.5 0 0 0 4.5 4.5c1.8 0 3.3-1 4-2.5l-1.5-.7c-.5.9-1.4 1.5-2.5 1.5A2.8 2.8 0 0 1 9.7 12a2.8 2.8 0 0 1 2.8-2.8c1.1 0 2 .6 2.5 1.5l1.5-.7A4.5 4.5 0 0 0 12.5 7.5z" fill="#FFF"/>
+                  </svg>
+                  <div>
+                    <span className="text-[11.5px] font-bold text-slate-800 block">C++ Compiler</span>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-normal">Verify pointer structures, dry-run vectors, and compile algorithms.</p>
+                  </div>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">Knowledge Base</h3>
-                <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
-                  Connects PDFs, notes, markdown guides, and sheets. Searches and indexes documentation using vector search.
-                </p>
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider block mt-3 uppercase">GCC v12</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Vector Indexing</span>
-            </div>
 
-            {/* Card 5: Data Science Copilot */}
-            <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="w-8 h-8 rounded-[6px] bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 mb-4">
-                  <Database className="w-4.5 h-4.5" />
+              {/* Env 4: SQL & Database */}
+              <div className="p-5 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-between shadow-sm transition-all hover:scale-[1.01] hover:shadow-md min-h-[170px]">
+                <div className="flex flex-col items-center gap-3">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="#336791" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126z"/>
+                  </svg>
+                  <div>
+                    <span className="text-[11.5px] font-bold text-slate-800 block">Database Console</span>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-normal">Test B-Trees, relational tables, and analyze schema designs.</p>
+                  </div>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">Data Science Copilot</h3>
-                <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
-                  Ingests CSV tables, suggests feature engineering targets, performs EDA, and outputs clean visualization code.
-                </p>
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider block mt-3 uppercase">Postgres 15</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Data Analytics</span>
-            </div>
 
-            {/* Card 6: Research Assistant */}
-            <div className="p-6 bg-white border border-slate-200/70 rounded-[10px] shadow-[0_1px_2px_rgba(0,0,0,0.01)] hover:border-slate-300 transition-all flex flex-col justify-between">
-              <div>
-                <div className="w-8 h-8 rounded-[6px] bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 mb-4">
-                  <Cpu className="w-4.5 h-4.5" />
+              {/* Env 5: Local Offline */}
+              <div className="p-5 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-between shadow-sm transition-all hover:scale-[1.01] hover:shadow-md min-h-[170px]">
+                <div className="flex flex-col items-center gap-3">
+                  <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-800" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                  </svg>
+                  <div>
+                    <span className="text-[11.5px] font-bold text-slate-800 block">Offline Runtimes</span>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-normal">Run models locally with Ollama support (Llama, Mistral).</p>
+                  </div>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">Research Assistant</h3>
-                <p className="text-xs text-[#52525B] mt-2 leading-relaxed text-justify">
-                  Synthesizes documentation, parses references, extracts structured data tables, and drafts comprehensive insights.
-                </p>
+                <span className="text-[9px] font-bold text-slate-400 tracking-wider block mt-3 uppercase">Ollama Local</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Information Mining</span>
-            </div>
 
+            </div>
           </div>
+
         </section>
 
         {/* ── 7. Use Cases ───────────────────────────────────────────────── */}
@@ -758,170 +964,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── 9. Technology & Infrastructure ─────────────────────────────── */}
-        <section id="tech-stack" className="max-w-7xl mx-auto px-8 py-10 w-full text-center">
-          <div className="max-w-2xl mx-auto mb-10">
-            <span className="text-sm font-medium text-[#6B7280] tracking-widest block">Modern Architecture</span>
-            <h2 className="text-3xl font-bold tracking-tight text-[#111111] mt-2">Built with Modern AI Infrastructure</h2>
-            <p className="text-xs text-[#52525B] mt-2">Production-grade technologies configured for extreme performance and scalability.</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 max-w-5xl mx-auto">
-            {/* Tech 1: Next.js */}
-            <div className="p-4 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-center shadow-sm transition-all hover:scale-[1.02] hover:shadow-md gap-2">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#000000" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/>
-              </svg>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-800 font-sans">Next.js</span>
-                <span className="text-[9px] text-slate-400">App Router UI</span>
-              </div>
-            </div>
-            {/* Tech 2: FastAPI */}
-            <div className="p-4 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-center shadow-sm transition-all hover:scale-[1.02] hover:shadow-md gap-2">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#009688" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 .0387C5.3729.0384.0003 5.3931 0 11.9988c-.001 6.6066 5.372 11.9628 12 11.9625 6.628.0003 12.001-5.3559 12-11.9625-.0003-6.6057-5.3729-11.9604-12-11.96m-.829 5.4153h7.55l-7.5805 5.3284h5.1828L5.279 18.5436q2.9466-6.5444 5.892-13.0896"/>
-              </svg>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-800 font-sans">FastAPI</span>
-                <span className="text-[9px] text-slate-400">Python Backend</span>
-              </div>
-            </div>
-            {/* Tech 3: Supabase */}
-            <div className="p-4 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-center shadow-sm transition-all hover:scale-[1.02] hover:shadow-md gap-2">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#3ECF8E" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/>
-              </svg>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-800 font-sans">Supabase</span>
-                <span className="text-[9px] text-slate-400">Auth & Storage</span>
-              </div>
-            </div>
-            {/* Tech 4: PostgreSQL */}
-            <div className="p-4 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-center shadow-sm transition-all hover:scale-[1.02] hover:shadow-md gap-2">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="#336791" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z"/>
-              </svg>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-800 font-sans">PostgreSQL</span>
-                <span className="text-[9px] text-slate-400">Relational DB</span>
-              </div>
-            </div>
-            {/* Tech 5: Vector Search */}
-            <div className="p-4 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-center shadow-sm transition-all hover:scale-[1.02] hover:shadow-md gap-2">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-              </svg>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-800 font-sans">Vector Search</span>
-                <span className="text-[9px] text-slate-400">RAG Retrieval</span>
-              </div>
-            </div>
-            {/* Tech 6: Gemini */}
-            <div className="p-4 bg-white border border-slate-200/60 rounded-[8px] text-center flex flex-col items-center justify-center shadow-sm transition-all hover:scale-[1.02] hover:shadow-md gap-2">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="gemini-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#4285F4" />
-                    <stop offset="30%" stopColor="#9B72CB" />
-                    <stop offset="70%" stopColor="#D96570" />
-                    <stop offset="100%" stopColor="#F3AF42" />
-                  </linearGradient>
-                </defs>
-                <path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81" fill="url(#gemini-grad)"/>
-              </svg>
-              <div className="flex flex-col items-center">
-                <span className="text-[11px] font-bold text-slate-800 font-sans">Gemini</span>
-                <span className="text-[9px] text-slate-400">LLM Reasoning</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 10. Roadmap Section ────────────────────────────────────────── */}
-        <section id="roadmap" className="max-w-7xl mx-auto px-8 py-10 w-full">
-          <div className="text-center mb-10">
-            <span className="text-sm font-medium text-[#6B7280] tracking-widest">Strategic Release Plan</span>
-            <h2 className="text-3xl font-bold tracking-tight text-[#111111] mt-2">Platform Roadmap</h2>
-            <p className="text-sm text-[#52525B] mt-2">Active feature releases and future agent development timelines.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            
-            {/* Column 1: Today */}
-            <div className="p-5 border border-slate-200/60 bg-white rounded-[10px] shadow-sm flex flex-col justify-between min-h-[200px]">
-              <div>
-                <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded tracking-wider">Today</span>
-                <ul className="mt-4 space-y-2 text-xs text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    AI Chat & Tutoring
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    PDF / Document Ingestion
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    Dynamic Markdown Parsing
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    Interactive Mermaid Diagrams
-                  </li>
-                </ul>
-              </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Current Release</span>
-            </div>
-
-            {/* Column 2: Next */}
-            <div className="p-5 border border-slate-200/60 bg-white rounded-[10px] shadow-sm flex flex-col justify-between min-h-[200px]">
-              <div>
-                <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded tracking-wider">Next</span>
-                <ul className="mt-4 space-y-2 text-xs text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                    Personal Knowledge Base
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                    Coding Assistant Agent
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                    Git Repository Indexer
-                  </li>
-                </ul>
-              </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Active Development</span>
-            </div>
-
-            {/* Column 3: Future */}
-            <div className="p-5 border border-slate-200/60 bg-white rounded-[10px] shadow-sm flex flex-col justify-between min-h-[200px]">
-              <div>
-                <span className="text-[9px] font-bold text-[#52525B] bg-slate-100 px-2 py-0.5 rounded tracking-wider">In Progress</span>
-                <ul className="mt-4 space-y-2 text-xs text-slate-700">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    Interactive DSA Compiler
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    Auto-Learning Agent
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                    Data Science Copilot
-                  </li>
-                </ul>
-              </div>
-              <span className="text-[10px] font-semibold text-slate-400 mt-6 block tracking-wider">Long Term Vision</span>
-            </div>
-
-          </div>
-        </section>
 
         {/* ── 11. Open Source & Privacy ──────────────────────────────────── */}
         <section className="max-w-7xl mx-auto px-8 py-10 w-full text-center">
@@ -1048,7 +1090,6 @@ export default function Home() {
               <h4 className="text-[10px] font-bold text-slate-400 tracking-widest">Product</h4>
               <ul className="space-y-1.5 text-[11.5px] font-medium text-[#52525B]">
                 <li><a href="#features" className="hover:text-[#111111] transition-colors">Features</a></li>
-                <li><a href="#roadmap" className="hover:text-[#111111] transition-colors">Roadmap</a></li>
                 <li><Link href="/login" className="hover:text-[#111111] transition-colors">Docs</Link></li>
               </ul>
             </div>

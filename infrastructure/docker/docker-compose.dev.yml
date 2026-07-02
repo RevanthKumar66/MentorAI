@@ -1,26 +1,24 @@
 version: '3.8'
 
-services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: mentorai-postgres-dev
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mentorai
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mentorai"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+# ============================================================
+# Momentum AI — Full Development Stack
+# ============================================================
+# Usage:
+#   docker compose -f infrastructure/docker/docker-compose.dev.yml up --build
+#
+# Services:
+#   - web      → Next.js frontend          → http://localhost:3000
+#   - api      → FastAPI backend           → http://localhost:8000
+#   - ollama   → Local LLM server          → http://localhost:11434
+#   - redis    → Cache / task queue        → localhost:6379
+# ============================================================
 
+services:
+
+  # ── Redis (cache + Celery broker) ──────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: mentorai-redis-dev
+    container_name: mentorai-redis
     ports:
       - "6379:6379"
     volumes:
@@ -30,44 +28,106 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
+  # ── Ollama (local open-source LLM server) ──────────────────
+  # Hosts models locally — no API key needed.
+  # Models are downloaded once and cached in the ollama_models volume.
+  #
+  # To pull a model after startup:
+  #   docker exec -it mentorai-ollama ollama pull mistral
+  #
+  # Supported free models:
+  #   mistral          (7B, best all-round)
+  #   phi3:mini        (3.8B, fast, small)
+  #   gemma2:2b        (2B, lightweight)
+  #   llama3.2:3b      (3B, Meta)
+  #   qwen2.5:7b       (7B, multilingual)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mentorai-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_NUM_PARALLEL=2
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    # GPU support (uncomment if NVIDIA GPU + nvidia-container-toolkit installed):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # ── FastAPI Backend ─────────────────────────────────────────
   api:
     build:
       context: ../../
       dockerfile: infrastructure/docker/Dockerfile.api
-    container_name: mentorai-api-dev
+    container_name: mentorai-api
     ports:
       - "8000:8000"
+    env_file:
+      - ../../services/api/.env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/mentorai
+      # Override service hostnames for Docker networking
       - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_BASE_URL=http://ollama:11434
       - ENV=development
       - DEBUG=true
     volumes:
+      # Hot reload in development — mount source code
       - ../../services/api:/app/services/api
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
+  # ── Next.js Frontend ────────────────────────────────────────
   web:
     build:
       context: ../../
       dockerfile: infrastructure/docker/Dockerfile.web
-    container_name: mentorai-web-dev
+    container_name: mentorai-web
     ports:
       - "3000:3000"
+    env_file:
+      - ../../apps/web/.env.local
     environment:
-      - NEXT_PUBLIC_APP_URL=http://localhost:3000
-      - NEXT_PUBLIC_SUPABASE_URL=https://placeholder-project.supabase.co
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-anon-key
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NODE_ENV=development
     volumes:
       - ../../apps/web:/app/apps/web
       - /app/apps/web/node_modules
+      - /app/apps/web/.next
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
+# ── Persisted Volumes ───────────────────────────────────────
 volumes:
-  postgres_data:
   redis_data:
+    driver: local
+  ollama_models:
+    driver: local
+    # Models are stored here and survive container restarts.
+    # First pull of a model will download it; subsequent starts reuse the cache.

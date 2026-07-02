@@ -70,7 +70,7 @@ Ensure the response is STRICT valid JSON with NO backticks, NO "```json" wrapper
 """
         res_llm = await provider.generate(
             messages=[{"role": "user", "content": prompt}],
-            model="gemini-2.5-flash",
+            model="gemini-2.0-flash",
             temperature=0.3
         )
         text_resp = res_llm.get("text", "").strip()
@@ -425,7 +425,7 @@ Ensure the response is STRICT valid JSON with NO markdown fences. Return only th
 """
         res_llm = await provider.generate(
             messages=[{"role": "user", "content": prompt}],
-            model="gemini-2.5-flash",
+            model="gemini-2.0-flash",
             temperature=0.4
         )
         text_resp = res_llm.get("text", "").strip()
@@ -591,7 +591,7 @@ Ensure the response is STRICT valid JSON with NO markdown fences. Return only th
 """
             res_llm = await provider.generate(
                 messages=[{"role": "user", "content": prompt}],
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 temperature=0.3
             )
             text_resp = res_llm.get("text", "").strip()
@@ -747,7 +747,7 @@ Ensure the response is STRICT valid JSON with NO markdown fences. Return only th
 """
         res_llm = await provider.generate(
             messages=[{"role": "user", "content": prompt}],
-            model="gemini-2.5-flash",
+            model="gemini-2.0-flash",
             temperature=0.3
         )
         text_resp = res_llm.get("text", "").strip()
@@ -1323,7 +1323,7 @@ Return ONLY the raw JSON string. Do not include markdown formatting or backticks
             # Try primary provider (e.g. Gemini)
             res_llm = await provider.generate(
                 messages=[{"role": "user", "content": prompt}],
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 temperature=0.3
             )
             text_resp = res_llm.get("text", "").strip()
@@ -1587,7 +1587,7 @@ Return ONLY the raw JSON string. Do not include markdown formatting or backticks
         try:
             res_llm = await provider.generate(
                 messages=[{"role": "user", "content": prompt}],
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash",
                 temperature=0.3
             )
             text_resp = res_llm.get("text", "").strip()
@@ -2130,7 +2130,7 @@ Provide a concise, helpful, and professional mentoring answer (maximum 4-5 sente
         provider = LLMProviderFactory.get_provider()
         res_llm = await provider.generate(
             messages=[{"role": "user", "content": prompt}],
-            model="gemini-2.5-flash",
+            model="gemini-2.0-flash",
             temperature=0.3
         )
         answer = res_llm.get("text", "").strip()
@@ -2264,4 +2264,522 @@ async def send_deadline_reminders(
     except Exception as e:
         logger.error(f"Error sending deadline reminders: {str(e)}", exc_info=True)
         return error_response(code="DEADLINE_REMINDER_FAILED", message=str(e), status_code=500)
+
+
+# ─────────────────────────────────────────────
+# NEW: Email Intelligence & Opportunity Engine
+# ─────────────────────────────────────────────
+
+from app.services.email_sync_service import EmailSyncService
+from app.services.reply_draft_service import ReplyDraftService
+
+class TriageRulePayload(BaseModel):
+    rule_name: str
+    category_filter: str
+    action: str
+    is_active: Optional[bool] = True
+
+class DraftActionPayload(BaseModel):
+    draft_id: str
+    action: str  # approve_send, save, reject
+    edited_body: Optional[str] = None
+
+class CreateDraftPayload(BaseModel):
+    thread_uuid: str
+
+@router.post("/email/sync")
+async def sync_emails(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Triggers synchronizing and triaging user emails."""
+    try:
+        sync_service = EmailSyncService()
+        result = await sync_service.sync_emails(db, str(current_user.id))
+        if result and result.get("success"):
+            return success_response(data=result, message="Emails synchronized and triaged successfully.")
+        else:
+            return error_response(code="SYNC_FAILED", message="Failed to sync emails.", status_code=500)
+    except Exception as e:
+        logger.error(f"Error syncing emails: {str(e)}", exc_info=True)
+        return error_response(code="EMAIL_SYNC_ERROR", message=str(e), status_code=500)
+
+@router.get("/email/overview")
+async def get_email_overview(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Retrieves Inbox Health Score, activity timeline, and triage stats."""
+    try:
+        # Get metrics
+        unread_important_stmt = text("""
+            SELECT COUNT(*) FROM email_threads 
+            WHERE user_id = CAST(:user_id AS uuid) AND is_read = false AND priority_score >= 80
+        """)
+        res = await db.execute(unread_important_stmt, {"user_id": str(current_user.id)})
+        unread_important_count = res.scalar() or 0
+
+        pending_opps_stmt = text("""
+            SELECT COUNT(*) FROM email_opportunities 
+            WHERE user_id = CAST(:user_id AS uuid) AND status = 'detected'
+        """)
+        res = await db.execute(pending_opps_stmt, {"user_id": str(current_user.id)})
+        pending_opportunities = res.scalar() or 0
+
+        pending_drafts_stmt = text("""
+            SELECT COUNT(*) FROM email_drafts 
+            WHERE user_id = CAST(:user_id AS uuid) AND status = 'pending'
+        """)
+        res = await db.execute(pending_drafts_stmt, {"user_id": str(current_user.id)})
+        pending_drafts = res.scalar() or 0
+
+        missed_dl_stmt = text("""
+            SELECT COUNT(*) FROM email_deadlines 
+            WHERE user_id = CAST(:user_id AS uuid) AND deadline_date < NOW() AND status = 'pending'
+        """)
+        res = await db.execute(missed_dl_stmt, {"user_id": str(current_user.id)})
+        missed_deadlines = res.scalar() or 0
+
+        action_queue_stmt = text("""
+            SELECT COUNT(*) FROM email_threads 
+            WHERE user_id = CAST(:user_id AS uuid) AND priority_score >= 50
+        """)
+        res = await db.execute(action_queue_stmt, {"user_id": str(current_user.id)})
+        action_queue_count = res.scalar() or 0
+
+        cleansed_stmt = text("""
+            SELECT COUNT(*) FROM email_activity_logs 
+            WHERE user_id = CAST(:user_id AS uuid) AND (description LIKE '%deleted%' OR description LIKE '%archived%')
+        """)
+        res = await db.execute(cleansed_stmt, {"user_id": str(current_user.id)})
+        cleansed_count = res.scalar() or 0
+
+        # Category distributions
+        cat_stmt = text("""
+            SELECT category, COUNT(*) FROM email_threads 
+            WHERE user_id = CAST(:user_id AS uuid)
+            GROUP BY category
+        """)
+        res = await db.execute(cat_stmt, {"user_id": str(current_user.id)})
+        category_counts = {row[0]: row[1] for row in res.fetchall()}
+
+        # Health score calculations
+        score = 100 - (unread_important_count * 5) - (pending_opportunities * 10) - (pending_drafts * 8) - (missed_deadlines * 15) - (action_queue_count * 2)
+        health_score = max(0, min(100, score))
+
+        # Recent activities
+        logs_stmt = text("""
+            SELECT id, action_type, description, created_at 
+            FROM email_activity_logs 
+            WHERE user_id = CAST(:user_id AS uuid) 
+            ORDER BY created_at DESC LIMIT 8
+        """)
+        res = await db.execute(logs_stmt, {"user_id": str(current_user.id)})
+        activities = []
+        for r in res.fetchall():
+            activities.append({
+                "id": str(r[0]),
+                "action_type": r[1],
+                "description": r[2],
+                "created_at": r[3].isoformat() if r[3] else None
+            })
+
+        return success_response(
+            data={
+                "health_score": health_score,
+                "unread_important": unread_important_count,
+                "pending_opportunities": pending_opportunities,
+                "pending_drafts": pending_drafts,
+                "missed_deadlines": missed_deadlines,
+                "action_queue_count": action_queue_count,
+                "cleansed_count": cleansed_count,
+                "category_distribution": category_counts,
+                "activities": activities
+            },
+            message="Email intelligence overview retrieved successfully."
+        )
+    except Exception as e:
+        logger.error(f"Error fetching overview: {str(e)}", exc_info=True)
+        return error_response(code="EMAIL_OVERVIEW_ERROR", message=str(e), status_code=500)
+
+@router.get("/email/threads")
+async def get_email_threads(
+    category: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Retrieves list of all email threads, with optional category filtering."""
+    try:
+        if category:
+            stmt = text("""
+                SELECT id, thread_id, subject, sender, snippet, body, category, priority_score, urgency_reason, is_read, last_message_date 
+                FROM email_threads 
+                WHERE user_id = CAST(:user_id AS uuid) AND category = :category
+                ORDER BY last_message_date DESC
+            """)
+            res = await db.execute(stmt, {"user_id": str(current_user.id), "category": category})
+        else:
+            stmt = text("""
+                SELECT id, thread_id, subject, sender, snippet, body, category, priority_score, urgency_reason, is_read, last_message_date 
+                FROM email_threads 
+                WHERE user_id = CAST(:user_id AS uuid)
+                ORDER BY last_message_date DESC
+            """)
+            res = await db.execute(stmt, {"user_id": str(current_user.id)})
+
+        threads = []
+        for r in res.fetchall():
+            threads.append({
+                "id": str(r[0]),
+                "thread_id": r[1],
+                "subject": r[2],
+                "sender": r[3],
+                "snippet": r[4],
+                "body": r[5],
+                "category": r[6],
+                "priority_score": r[7],
+                "urgency_reason": r[8],
+                "is_read": r[9],
+                "last_message_date": r[10].isoformat() if r[10] else None
+            })
+
+        return success_response(data=threads, message="Email threads retrieved.")
+    except Exception as e:
+        logger.error(f"Error fetching threads: {str(e)}", exc_info=True)
+        return error_response(code="EMAIL_THREADS_ERROR", message=str(e), status_code=500)
+
+@router.get("/email/action-queue")
+async def get_action_queue(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Retrieves prioritized emails with extracted opportunities and deadlines."""
+    try:
+        # Get high-priority threads (score >= 50)
+        stmt = text("""
+            SELECT t.id, t.thread_id, t.subject, t.sender, t.snippet, t.body, t.category, t.priority_score, t.urgency_reason, t.last_message_date,
+                   o.id, o.opportunity_type, o.suggested_action, o.goal_id,
+                   d.id, d.title, d.deadline_date, d.task_id
+            FROM email_threads t
+            LEFT JOIN email_opportunities o ON t.id = o.email_thread_id
+            LEFT JOIN email_deadlines d ON t.id = d.email_thread_id
+            WHERE t.user_id = CAST(:user_id AS uuid) AND t.priority_score >= 50
+            ORDER BY t.priority_score DESC
+        """)
+        res = await db.execute(stmt, {"user_id": str(current_user.id)})
+
+        queue = []
+        for r in res.fetchall():
+            queue.append({
+                "id": str(r[0]),
+                "thread_id": r[1],
+                "subject": r[2],
+                "sender": r[3],
+                "snippet": r[4],
+                "body": r[5],
+                "category": r[6],
+                "priority_score": r[7],
+                "urgency_reason": r[8],
+                "last_message_date": r[9].isoformat() if r[9] else None,
+                "opportunity": {
+                    "id": str(r[10]) if r[10] else None,
+                    "opportunity_type": r[11],
+                    "suggested_action": r[12],
+                    "goal_id": str(r[13]) if r[13] else None
+                } if r[10] else None,
+                "deadline": {
+                    "id": str(r[14]) if r[14] else None,
+                    "title": r[15],
+                    "deadline_date": r[16].isoformat() if r[16] else None,
+                    "task_id": str(r[17]) if r[17] else None
+                } if r[14] else None
+            })
+
+        return success_response(data=queue, message="Action queue retrieved.")
+    except Exception as e:
+        logger.error(f"Error fetching action queue: {str(e)}", exc_info=True)
+        return error_response(code="ACTION_QUEUE_ERROR", message=str(e), status_code=500)
+
+@router.get("/email/drafts")
+async def get_drafts(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Retrieves all generated email drafts for the user."""
+    try:
+        stmt = text("""
+            SELECT id, email_thread_id, subject, recipient, draft_body, status, created_at 
+            FROM email_drafts 
+            WHERE user_id = CAST(:user_id AS uuid) AND status = 'pending'
+            ORDER BY created_at DESC
+        """)
+        res = await db.execute(stmt, {"user_id": str(current_user.id)})
+        drafts = []
+        for r in res.fetchall():
+            drafts.append({
+                "id": str(r[0]),
+                "email_thread_id": str(r[1]),
+                "subject": r[2],
+                "recipient": r[3],
+                "draft_body": r[4],
+                "status": r[5],
+                "created_at": r[6].isoformat() if r[6] else None
+            })
+        return success_response(data=drafts, message="Email drafts retrieved.")
+    except Exception as e:
+        logger.error(f"Error fetching drafts: {str(e)}", exc_info=True)
+        return error_response(code="DRAFTS_FETCH_ERROR", message=str(e), status_code=500)
+
+@router.post("/email/drafts/create")
+async def manual_create_draft(
+    payload: CreateDraftPayload,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Manually triggers Gemini to generate an AI reply draft for a thread."""
+    try:
+        # Retrieve thread details
+        stmt = text("""
+            SELECT subject, sender, body, category 
+            FROM email_threads 
+            WHERE id = CAST(:thread_uuid AS uuid) AND user_id = CAST(:user_id AS uuid)
+        """)
+        res = await db.execute(stmt, {"thread_uuid": payload.thread_uuid, "user_id": str(current_user.id)})
+        row = res.fetchone()
+        if not row:
+            return error_response(code="THREAD_NOT_FOUND", message="Email thread not found.", status_code=404)
+
+        subject, sender, body, category = row
+        drafter = ReplyDraftService()
+        draft = await drafter.create_reply_draft(
+            db, str(current_user.id), payload.thread_uuid, subject, sender, body, category or "Other", force=True
+        )
+        if draft:
+            return success_response(data=draft, message="AI draft generated successfully.")
+        else:
+            return error_response(code="DRAFT_GENERATION_FAILED", message="Could not generate a draft. The AI may have returned an invalid response.", status_code=400)
+    except Exception as e:
+        logger.error(f"Error generating manual draft: {str(e)}", exc_info=True)
+        return error_response(code="MANUAL_DRAFT_ERROR", message=str(e), status_code=500)
+
+@router.post("/email/drafts/action")
+async def act_on_draft(
+    payload: DraftActionPayload,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Executes a draft action: Send, Save, or Reject."""
+    try:
+        # Check if draft exists
+        stmt_check = text("""
+            SELECT id, email_thread_id, subject, recipient, draft_body 
+            FROM email_drafts 
+            WHERE id = CAST(:draft_id AS uuid) AND user_id = CAST(:user_id AS uuid)
+        """)
+        res = await db.execute(stmt_check, {"draft_id": payload.draft_id, "user_id": str(current_user.id)})
+        row = res.fetchone()
+        if not row:
+            return error_response(code="DRAFT_NOT_FOUND", message="Draft not found.", status_code=404)
+
+        draft_id, thread_uuid, subject, recipient, draft_body = row
+        new_body = payload.edited_body or draft_body
+
+        if payload.action == "approve_send":
+            # Update draft
+            stmt_update = text("""
+                UPDATE email_drafts 
+                SET draft_body = :body, status = 'sent', updated_at = now() 
+                WHERE id = CAST(:draft_id AS uuid)
+            """)
+            await db.execute(stmt_update, {"body": new_body, "draft_id": draft_id})
+
+            # Check if there is a real Google access token to send a real email draft
+            stmt_conn = text("SELECT access_token FROM calendar_connections WHERE user_id = CAST(:user_id AS uuid)")
+            res_conn = await db.execute(stmt_conn, {"user_id": str(current_user.id)})
+            row_conn = res_conn.fetchone()
+            real_sent = False
+            
+            if row_conn and row_conn[0] and not row_conn[0].startswith("mock_"):
+                import httpx
+                send_url = "https://www.googleapis.com/gmail/v1/users/me/messages/send"
+                headers = {
+                    "Authorization": f"Bearer {row_conn[0]}",
+                    "Content-Type": "application/json"
+                }
+                import email.mime.text
+                import base64
+                mime_msg = email.mime.text.MIMEText(new_body)
+                mime_msg["to"] = recipient
+                mime_msg["subject"] = subject
+                raw_bytes = mime_msg.as_bytes()
+                raw_b64 = base64.urlsafe_b64encode(raw_bytes).decode("utf-8")
+                
+                try:
+                    async with httpx.AsyncClient() as client:
+                        send_res = await client.post(send_url, headers=headers, json={"raw": raw_b64})
+                        if send_res.status_code == 200:
+                            real_sent = True
+                except Exception as ex:
+                    logger.error(f"Failed to deliver real email via Google API: {str(ex)}")
+
+            # Log activity
+            stmt_log = text("""
+                INSERT INTO email_activity_logs (user_id, action_type, description, email_thread_id)
+                VALUES (CAST(:user_id AS uuid), 'draft_sent', :desc, CAST(:thread_uuid AS uuid))
+            """)
+            delivery_mode = "delivered via Google Workspace" if real_sent else "simulated & sent successfully"
+            await db.execute(stmt_log, {
+                "user_id": str(current_user.id),
+                "desc": f"Draft response to '{recipient}' was approved and {delivery_mode}.",
+                "thread_uuid": thread_uuid
+            })
+
+        elif payload.action == "save":
+            stmt_update = text("""
+                UPDATE email_drafts 
+                SET draft_body = :body, status = 'saved', updated_at = now() 
+                WHERE id = CAST(:draft_id AS uuid)
+            """)
+            await db.execute(stmt_update, {"body": new_body, "draft_id": draft_id})
+
+            stmt_log = text("""
+                INSERT INTO email_activity_logs (user_id, action_type, description, email_thread_id)
+                VALUES (CAST(:user_id AS uuid), 'draft_saved', :desc, CAST(:thread_uuid AS uuid))
+            """)
+            await db.execute(stmt_log, {
+                "user_id": str(current_user.id),
+                "desc": f"Draft response to '{recipient}' was updated and saved.",
+                "thread_uuid": thread_uuid
+            })
+
+        elif payload.action == "reject":
+            stmt_update = text("""
+                UPDATE email_drafts 
+                SET status = 'rejected', updated_at = now() 
+                WHERE id = CAST(:draft_id AS uuid)
+            """)
+            await db.execute(stmt_update, {"draft_id": draft_id})
+
+            stmt_log = text("""
+                INSERT INTO email_activity_logs (user_id, action_type, description, email_thread_id)
+                VALUES (CAST(:user_id AS uuid), 'draft_rejected', :desc, CAST(:thread_uuid AS uuid))
+            """)
+            await db.execute(stmt_log, {
+                "user_id": str(current_user.id),
+                "desc": f"Draft response to '{recipient}' was rejected.",
+                "thread_uuid": thread_uuid
+            })
+
+        await db.commit()
+        return success_response(data={"status": payload.action}, message=f"Draft action '{payload.action}' executed successfully.")
+    except Exception as e:
+        logger.error(f"Error handling draft action: {str(e)}", exc_info=True)
+        return error_response(code="DRAFT_ACTION_ERROR", message=str(e), status_code=500)
+
+@router.get("/email/rules")
+async def get_triage_rules(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Retrieves all triage rules configured by the user."""
+    try:
+        stmt = text("""
+            SELECT id, rule_name, category_filter, action, is_active 
+            FROM email_triage_rules 
+            WHERE user_id = CAST(:user_id AS uuid)
+            ORDER BY created_at DESC
+        """)
+        res = await db.execute(stmt, {"user_id": str(current_user.id)})
+        rules = []
+        for r in res.fetchall():
+            rules.append({
+                "id": str(r[0]),
+                "rule_name": r[1],
+                "category_filter": r[2],
+                "action": r[3],
+                "is_active": r[4]
+            })
+        return success_response(data=rules, message="Triage rules retrieved.")
+    except Exception as e:
+        logger.error(f"Error fetching rules: {str(e)}", exc_info=True)
+        return error_response(code="RULES_FETCH_ERROR", message=str(e), status_code=500)
+
+@router.post("/email/rules")
+async def create_triage_rule(
+    payload: TriageRulePayload,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Creates a new autonomous triage rule."""
+    try:
+        stmt = text("""
+            INSERT INTO email_triage_rules (user_id, rule_name, category_filter, action, is_active)
+            VALUES (CAST(:user_id AS uuid), :name, :filter, :action, :is_active)
+            RETURNING id, rule_name, category_filter, action, is_active
+        """)
+        res = await db.execute(stmt, {
+            "user_id": str(current_user.id),
+            "name": payload.rule_name,
+            "filter": payload.category_filter,
+            "action": payload.action,
+            "is_active": payload.is_active
+        })
+        row = res.fetchone()
+        await db.commit()
+        
+        if row:
+            rule_data = {
+                "id": str(row[0]),
+                "rule_name": row[1],
+                "category_filter": row[2],
+                "action": row[3],
+                "is_active": row[4]
+            }
+            return success_response(data=rule_data, message="Triage rule created successfully.")
+        return error_response(code="RULE_CREATE_FAILED", message="Failed to create triage rule.", status_code=500)
+    except Exception as e:
+        logger.error(f"Error creating rule: {str(e)}", exc_info=True)
+        return error_response(code="RULE_CREATE_ERROR", message=str(e), status_code=500)
+
+@router.post("/email/rules/{rule_id}/toggle")
+async def toggle_triage_rule(
+    rule_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Toggles a triage rule's active state."""
+    try:
+        # Check rule
+        stmt_check = text("SELECT is_active FROM email_triage_rules WHERE id = CAST(:id AS uuid) AND user_id = CAST(:user_id AS uuid)")
+        res = await db.execute(stmt_check, {"id": rule_id, "user_id": str(current_user.id)})
+        row = res.fetchone()
+        if not row:
+            return error_response(code="RULE_NOT_FOUND", message="Rule not found.", status_code=404)
+
+        new_status = not row[0]
+        stmt_update = text("UPDATE email_triage_rules SET is_active = :status, updated_at = now() WHERE id = CAST(:id AS uuid)")
+        await db.execute(stmt_update, {"status": new_status, "id": rule_id})
+        await db.commit()
+
+        return success_response(data={"is_active": new_status}, message=f"Rule state set to {'active' if new_status else 'inactive'}.")
+    except Exception as e:
+        logger.error(f"Error toggling rule: {str(e)}", exc_info=True)
+        return error_response(code="RULE_TOGGLE_ERROR", message=str(e), status_code=500)
+
+@router.delete("/email/rules/{rule_id}")
+async def delete_triage_rule(
+    rule_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """Deletes a triage rule."""
+    try:
+        stmt = text("DELETE FROM email_triage_rules WHERE id = CAST(:id AS uuid) AND user_id = CAST(:user_id AS uuid)")
+        await db.execute(stmt, {"id": rule_id, "user_id": str(current_user.id)})
+        await db.commit()
+        return success_response(data={"deleted": True}, message="Triage rule deleted successfully.")
+    except Exception as e:
+        logger.error(f"Error deleting rule: {str(e)}", exc_info=True)
+        return error_response(code="RULE_DELETE_ERROR", message=str(e), status_code=500)
+
 

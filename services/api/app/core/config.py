@@ -55,10 +55,15 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = Field(default="gemini")
     OPENROUTER_API_KEY: Optional[str] = None
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434")
+    HF_API_KEY: Optional[str] = None  # HuggingFace Inference API token (hf_xxx)
 
     # Email Notifications
     RESEND_API_KEY: Optional[str] = None
     NEXT_PUBLIC_APP_URL: str = Field(default="http://localhost:3000")
+
+    # Google OAuth credentials for Workspace/Calendar refresh
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
 
 # Initialize settings singleton
 settings = Settings()

@@ -63,7 +63,7 @@ class ChatService:
         workspace_id: Optional[uuid.UUID] = None
     ) -> ChatSession:
         title = title or "New Conversation"
-        model_name = model_name or "gemini-2.5-flash"
+        model_name = model_name or "gemini-2.0-flash"
         temperature = temperature if temperature is not None else 0.7
         role = role or "general"
         role_type = role_type or "general"

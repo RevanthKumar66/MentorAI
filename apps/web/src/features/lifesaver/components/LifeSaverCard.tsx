@@ -52,7 +52,7 @@ export const LifeSaverCard: React.FC<LifeSaverCardProps> = ({
         </div>
 
         <Link
-          href="/lifesaver"
+          href="/mentors/momentum"
           className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-black text-white font-semibold text-[10.5px] rounded-[6px] transition-all duration-200 shrink-0 cursor-pointer"
         >
           Open Dashboard

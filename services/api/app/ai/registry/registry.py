@@ -51,6 +51,30 @@ ROLES: Dict[str, Dict[str, Any]] = {
         "name": "Document Assistant",
         "description": "Strict RAG context question answering with references.",
         "icon": "FileText"
+    },
+    "resume": {
+        "id": "resume",
+        "name": "Resume Preparation AI",
+        "description": "Resume builder, ATS optimization, score, cover letter generator.",
+        "icon": "FileSpreadsheet"
+    },
+    "language": {
+        "id": "language",
+        "name": "Language Learning Mentor",
+        "description": "Telugu-to-English, regional translation guides, vocabulary and grammar lessons.",
+        "icon": "Languages"
+    },
+    "agent": {
+        "id": "agent",
+        "name": "Business Automation Agent Builder",
+        "description": "Interactive workflow triggers, automated business node rules, and integration pipelines.",
+        "icon": "Cpu"
+    },
+    "job": {
+        "id": "job",
+        "name": "Job Profile Optimizer",
+        "description": "Naukri, LinkedIn, Unstop, Apna profile auditing and career opportunities suggestions.",
+        "icon": "Briefcase"
     }
 }
 
