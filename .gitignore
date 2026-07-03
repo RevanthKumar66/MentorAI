@@ -68,9 +68,9 @@ dist
 venv
 ENV
 env
-bin/
-lib/
-include/
+/bin/
+/lib/
+/include/
 pyvenv.cfg
 .pytest_cache/
 __pycache__/
