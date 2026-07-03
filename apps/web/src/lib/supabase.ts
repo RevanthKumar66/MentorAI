@@ -1,7 +1,26 @@
 import { createClient, AuthError } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-project.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+// Safe clean-up of environment variables
+const cleanEnvVar = (val: string | undefined): string => {
+  if (!val) return '';
+  return val.replace(/['"]/g, '').trim();
+};
+
+const getSupabaseUrl = (): string => {
+  const url = cleanEnvVar(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+    return 'https://placeholder-project.supabase.co';
+  }
+  return url;
+};
+
+const getSupabaseAnonKey = (): string => {
+  const key = cleanEnvVar(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  return key || 'placeholder-anon-key';
+};
+
+const supabaseUrl = getSupabaseUrl();
+const supabaseAnonKey = getSupabaseAnonKey();
 
 // Initialize the Supabase Client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
