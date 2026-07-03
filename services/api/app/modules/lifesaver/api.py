@@ -1540,6 +1540,16 @@ Return ONLY the raw JSON string. Do not include markdown formatting or backticks
         if "recoveryPlan" not in parsed: parsed["recoveryPlan"] = None
         if "reminders" not in parsed: parsed["reminders"] = []
 
+        # Sanitize suggestions to ensure confidence_score is never null
+        for s in parsed["suggestions"]:
+            if isinstance(s, dict):
+                if "confidence_score" not in s or s["confidence_score"] is None:
+                    s["confidence_score"] = s.get("confidence") or 85
+                try:
+                    s["confidence_score"] = int(s["confidence_score"])
+                except (ValueError, TypeError):
+                    s["confidence_score"] = 85
+
         return success_response(data=parsed, message="Schedule analysis completed successfully.")
     except Exception as e:
         logger.error(f"Error in scheduling analysis: {str(e)}", exc_info=True)

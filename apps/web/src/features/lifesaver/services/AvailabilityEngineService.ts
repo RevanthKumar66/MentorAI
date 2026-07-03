@@ -26,13 +26,27 @@ export class AvailabilityEngineService {
     
     // Load milestones from DB
     const activeGoalIds = goals.filter(g => g.status === 'active').map(g => g.id);
-    let milestones: any[] = [];
+    let milestones: {
+      id: string;
+      goal_id: string;
+      week_number: number;
+      title: string;
+      description: string;
+      status: string;
+    }[] = [];
     if (activeGoalIds.length > 0) {
       const { data: msData } = await supabase
         .from('lifesaver_milestones')
         .select('*')
         .in('goal_id', activeGoalIds);
-      milestones = msData || [];
+      milestones = (msData as {
+        id: string;
+        goal_id: string;
+        week_number: number;
+        title: string;
+        description: string;
+        status: string;
+      }[]) || [];
     }
     
     // Load risks
@@ -93,7 +107,7 @@ export class AvailabilityEngineService {
           suggested_start: s.suggested_start,
           suggested_end: s.suggested_end,
           reason: s.reason,
-          confidence_score: s.confidence_score
+          confidence_score: s.confidence_score ?? (s as unknown as Record<string, unknown>).confidence as number ?? 85
         }))
       );
     }
@@ -124,7 +138,7 @@ export class AvailabilityEngineService {
     await schedulingRepository.updateSuggestionStatus(id, 'rejected');
   }
 
-  async triggerVoiceCommand(prompt: string): Promise<any> {
+  async triggerVoiceCommand(prompt: string): Promise<unknown> {
     const headers = await this.getHeaders();
     const res = await fetch(`${API_BASE_URL}/lifesaver/scheduling/voice`, {
       method: 'POST',
