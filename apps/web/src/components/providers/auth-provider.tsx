@@ -5,12 +5,14 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/auth-store';
 import type { User } from '@supabase/supabase-js';
 
+import { getApiBaseUrl } from '@/lib/api-config';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setUser = useAuthStore((state) => state.setUser);
   const setLoading = useAuthStore((state) => state.setLoading);
 
   useEffect(() => {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+    const apiBaseUrl = getApiBaseUrl();
 
     const syncUserWithBackend = async (sessionUser: User, token: string) => {
       try {

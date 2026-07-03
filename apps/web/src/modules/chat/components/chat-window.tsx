@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { 
   ArrowRight, Terminal, Code2, Code, User, Share2, Settings, LogOut, ChevronDown, 
   RotateCcw, Database, Search, Star, GraduationCap, Briefcase, BarChart3, FileText, Plus, FileSpreadsheet,
-  GitFork, MessageSquare, HelpCircle, Compass, Users, Target, Atom, ClipboardCheck, Rocket, LucideIcon, Sparkles, Zap
+  GitFork, MessageSquare, HelpCircle, Compass, Users, Target, Atom, ClipboardCheck, Rocket, LucideIcon, Sparkles, Zap,
+  Menu
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
@@ -111,7 +112,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const { user, signOut } = useAuthStore();
   const router = useRouter();
-  const { sessions } = useChatStore();
+  const { sessions, sidebarOpen, setSidebarOpen } = useChatStore();
   const currentSession = sessions.find(s => s.id === activeSessionId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -177,7 +178,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       <header className="h-14 border-b border-slate-200 bg-[#f9f9f8] px-4 flex items-center justify-between z-10 shrink-0">
 
         {/* Left: toggle + title + context pills */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className={`p-1.5 rounded-[6px] text-slate-850 hover:text-slate-955 hover:bg-[#ecebea] transition-all cursor-pointer ${
+              sidebarOpen ? 'hidden md:hidden' : 'flex'
+            }`}
+            title="Open Sidebar"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
           <Image src="/mentorai-symbol-only.svg" alt="MentorAI" width={28} height={28} className="h-7 w-auto object-contain select-none shrink-0" />
           <WorkspaceSelector />
           

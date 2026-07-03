@@ -7,7 +7,9 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { Settings, Save, Check, Shield, Palette, Star, ArrowLeft } from 'lucide-react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
+
+const API_BASE_URL = getApiBaseUrl();
 
 async function getHeaders() {
   const { data } = await supabase.auth.getSession();

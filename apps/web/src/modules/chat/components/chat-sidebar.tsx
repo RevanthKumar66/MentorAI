@@ -716,7 +716,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   /* ── collapsed sidebar ── */
   if (!sidebarOpen) {
     return (
-      <aside className="w-14 bg-[#f9f9f8] border-r border-slate-200 flex flex-col items-center py-3.5 gap-3.5 h-full shrink-0">
+      <aside className="hidden md:flex w-14 bg-[#f9f9f8] border-r border-slate-200 flex flex-col items-center py-3.5 gap-3.5 h-full shrink-0">
         <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-[6px] text-slate-850 hover:text-slate-955 hover:bg-[#ecebea] transition-colors cursor-pointer" title="Open Sidebar">
           <PanelLeft className="w-4 h-4" />
         </button>
@@ -772,7 +772,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   /* ── expanded sidebar ── */
   return (
     <>
-      <aside className="w-64 bg-[#f9f9f8] border-r border-slate-200 flex flex-col h-full shrink-0 select-none">
+      {/* Mobile Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/35 backdrop-blur-xs z-40 md:hidden"
+        onClick={() => setSidebarOpen(false)}
+      />
+      <aside className="fixed inset-y-0 left-0 w-64 shadow-2xl z-50 flex flex-col bg-[#f9f9f8] border-r border-slate-200 h-full shrink-0 select-none md:relative md:w-64 md:shadow-none md:flex">
 
         {/* Header */}
         <div className="px-3.5 pt-3.5 pb-3 flex items-center justify-between shrink-0">

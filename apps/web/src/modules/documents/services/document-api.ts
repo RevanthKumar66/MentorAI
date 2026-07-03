@@ -1,7 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import { Document } from '../store/document-store';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { getApiBaseUrl } from '@/lib/api-config';
+
+const API_BASE_URL = getApiBaseUrl();
 
 async function getHeaders(isMultipart = false) {
   const { data } = await supabase.auth.getSession();
