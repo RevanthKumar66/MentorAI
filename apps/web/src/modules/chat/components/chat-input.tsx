@@ -450,10 +450,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
           {/* Attach button */}
           <label
-            className="p-1 md:p-1.5 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 select-none mb-0 md:mb-0.5"
+            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 select-none mb-0.5"
             title="Upload files"
           >
-            <Paperclip className="w-3 h-3 md:w-3.5 md:h-3.5" />
+            <Paperclip className="w-3.5 h-3.5" />
             <input ref={fileInputRef} type="file" multiple onChange={handleFileSelect} className="hidden" />
           </label>
 
@@ -470,10 +470,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 onPaste={handlePaste}
                 disabled={disabled}
                 placeholder=""
-                className="flex-1 w-full resize-none bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none text-[14px] md:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px]"
+                className="flex-1 w-full resize-none bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none text-[13.5px] md:text-[12.5px] placeholder:text-[11px] md:placeholder:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px]"
               />
               {/* Live interim text shown below typed text */}
-              <span className="absolute left-0.5 top-1 md:top-1.5 text-[14px] md:text-[12.5px] leading-relaxed text-slate-400 italic pointer-events-none select-none">
+              <span className="absolute left-0.5 top-1 md:top-1.5 text-[13.5px] md:text-[12.5px] leading-relaxed text-slate-400 italic pointer-events-none select-none">
                 {text ? '' : interimTranscript}
               </span>
             </div>
@@ -493,7 +493,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   ? 'Waiting...'
                   : 'Ask MentorAI anything...'
               }
-              className="flex-1 resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none text-[14px] md:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px] italic-placeholder"
+              className="flex-1 resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none text-[13.5px] md:text-[12.5px] placeholder:text-[11px] md:placeholder:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px] italic-placeholder"
             />
           )}
 
@@ -502,14 +502,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <button
             type="button"
             onClick={handleMicClick}
-            className={`group/mic p-1 md:p-1.5 transition-colors cursor-pointer shrink-0 mb-0 md:mb-0.5 rounded-full ${
+            className={`group/mic w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-colors cursor-pointer shrink-0 mb-0.5 rounded-full ${
               isListening
                 ? 'text-rose-500 animate-pulse'
                 : 'text-black hover:text-blue-600'
             }`}
             title={isListening ? 'Stop recording' : 'Voice input'}
           >
-            <MicIcon recording={isListening} className="w-[15px] h-[15px] md:w-[18px] md:h-[18px]" />
+            <MicIcon recording={isListening} className="w-[14px] h-[14px] md:w-[18px] md:h-[18px]" />
           </button>
 
           {/* Send / Stop button — 3 states:
@@ -523,12 +523,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               handleSubmit();
             }}
             disabled={disabled && !isListening}
-            className="group/send p-0.5 md:p-1 transition-all cursor-pointer shrink-0 mb-0 md:mb-0.5 rounded-full"
+            className="group/send w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all cursor-pointer shrink-0 mb-0.5 rounded-full"
             title={disabled ? 'Generating...' : 'Send Message'}
           >
             {disabled ? (
               /* ── Generating state: spinning ring + stop square ── */
-              <span className="relative flex items-center justify-center w-[15px] h-[15px] md:w-[18px] md:h-[18px]">
+              <span className="relative flex items-center justify-center w-[14px] h-[14px] md:w-[18px] md:h-[18px]">
                 {/* Spinning arc */}
                 <svg
                   className="absolute inset-0 w-full h-full animate-spin"
@@ -549,12 +549,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   />
                 </svg>
                 {/* Stop square in center */}
-                <span className="w-[5.5px] md:w-[7px] h-[5.5px] md:h-[7px] rounded-[1px] md:rounded-[1.5px] bg-slate-900" />
+                <span className="w-[5px] md:w-[7px] h-[5px] md:h-[7px] rounded-[1px] md:rounded-[1.5px] bg-slate-900" />
               </span>
             ) : (
               /* ── Send arrow: outlined pure black ── */
               <svg
-                className="w-[15px] h-[15px] md:w-[18px] md:h-[18px]"
+                className="w-[14px] h-[14px] md:w-[18px] md:h-[18px]"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
