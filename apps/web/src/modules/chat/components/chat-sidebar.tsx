@@ -589,6 +589,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const [searchQuery, setSearchQuery] = useState('');
   const [mentorsExpanded, setMentorsExpanded] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, [setSidebarOpen]);
   const filteredSessions = sessions.filter((session) =>
     (session.title || 'New Conversation').toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -773,11 +779,15 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   return (
     <>
       {/* Mobile Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/35 backdrop-blur-xs z-40 md:hidden"
-        onClick={() => setSidebarOpen(false)}
-      />
-      <aside className="fixed inset-y-0 left-0 w-64 shadow-2xl z-50 flex flex-col bg-[#f9f9f8] border-r border-slate-200 h-full shrink-0 select-none md:relative md:w-64 md:shadow-none md:flex">
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/35 backdrop-blur-xs z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside className={`fixed inset-y-0 left-0 w-64 shadow-2xl z-50 flex flex-col bg-[#f9f9f8] border-r border-slate-200 h-full shrink-0 select-none transition-transform duration-300 md:relative md:w-64 md:shadow-none md:flex md:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
 
         {/* Header */}
         <div className="px-3.5 pt-3.5 pb-3 flex items-center justify-between shrink-0">

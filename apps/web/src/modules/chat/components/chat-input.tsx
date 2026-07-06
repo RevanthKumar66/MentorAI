@@ -162,9 +162,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     if (!textarea) return;
     textarea.style.height = 'auto';
     const computedHeight = textarea.scrollHeight;
-    const newHeight = Math.min(Math.max(computedHeight, 24), 200);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const minHeight = isMobile ? 20 : 24;
+    const maxHeight = isMobile ? 120 : 200;
+    const newHeight = Math.min(Math.max(computedHeight, minHeight), maxHeight);
     textarea.style.height = `${newHeight}px`;
-    textarea.style.overflowY = computedHeight > 200 ? 'auto' : 'hidden';
+    textarea.style.overflowY = computedHeight > maxHeight ? 'auto' : 'hidden';
   }, [text]);
 
   /* ── helpers ── */
@@ -333,11 +336,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   /* ────────────────────────── render ─────────────────────────────────────── */
   return (
-    <div className="bg-transparent px-4 py-2 pb-4">
+    <div className="bg-transparent px-2 md:px-4 py-1.5 md:py-2 pb-3 md:pb-4">
       <div className="max-w-3xl mx-auto relative">
 
         {/* Top bar: model + role selectors */}
-        <div className="flex items-center justify-start gap-2 mb-2 pl-3.5">
+        <div className="flex items-center justify-start gap-1.5 mb-1.5 md:mb-2 pl-1.5 md:pl-3.5">
 
           {/* Model selector */}
           {activeSessionId && onUpdateModel ? (
@@ -345,25 +348,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <button
                 type="button"
                 onClick={() => setModelDropdownOpen(prev => !prev)}
-                className="flex items-center justify-between gap-1 w-[135px] h-[23px] px-2 text-[9.5px] font-semibold text-slate-800 rounded-[5px] bg-[#f4f3f0] border border-slate-300 hover:bg-[#ecebea] transition-all cursor-pointer text-left select-none shadow-none"
+                className="flex items-center justify-between gap-1 w-[105px] md:w-[135px] h-[20px] md:h-[23px] px-1.5 md:px-2 text-[8px] md:text-[9.5px] font-semibold text-slate-800 rounded-[4px] md:rounded-[5px] bg-[#f4f3f0] border border-slate-300 hover:bg-[#ecebea] transition-all cursor-pointer text-left select-none shadow-none"
               >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <svg className="w-3 h-3 shrink-0 text-black" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="flex items-center gap-1 min-w-0">
+                  <svg className="w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 text-black" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.52285 12 2 12C7.52285 12 12 7.52285 12 2Z" fill="currentColor"/>
                   </svg>
                   <span className="truncate">{modelLabels[modelName] || modelName}</span>
                 </div>
-                <ChevronDown className={`w-2.5 h-2.5 text-slate-500 transition-transform duration-200 ${modelDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-2 md:w-2.5 h-2 md:h-2.5 text-slate-500 transition-transform duration-200 ${modelDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {modelDropdownOpen && (
-                <div className="absolute left-0 bottom-full mb-1.5 w-[135px] bg-white border border-slate-300 rounded-[5px] py-1 z-50 shadow-none">
+                <div className="absolute left-0 bottom-full mb-1.5 w-[105px] md:w-[135px] bg-white border border-slate-300 rounded-[5px] py-1 z-50 shadow-none">
                   {Object.entries(modelLabels).map(([key, val]) => (
                     <button
                       key={key}
                       type="button"
                       onClick={() => { onUpdateModel(key); setModelDropdownOpen(false); }}
-                      className="w-full text-left px-2.5 py-1 text-[9.5px] font-semibold text-slate-800 hover:bg-[#f4f3f0] hover:text-slate-950 transition-colors cursor-pointer"
+                      className="w-full text-left px-2.5 py-1 text-[8.5px] md:text-[9.5px] font-semibold text-slate-800 hover:bg-[#f4f3f0] hover:text-slate-955 transition-colors cursor-pointer"
                     >
                       {val}
                     </button>
@@ -372,8 +375,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-1.5 w-[135px] h-[23px] text-[9.5px] font-semibold text-slate-800 rounded-[5px] bg-[#f4f3f0] border border-slate-300 select-none shadow-none">
-              <svg className="w-3 h-3 shrink-0 text-black" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div className="flex items-center justify-center gap-1 w-[105px] md:w-[135px] h-[20px] md:h-[23px] text-[8px] md:text-[9.5px] font-semibold text-slate-800 rounded-[4px] md:rounded-[5px] bg-[#f4f3f0] border border-slate-300 select-none shadow-none">
+              <svg className="w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 text-black" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2C12 7.52285 16.4772 12 22 12C16.4772 12 12 16.4772 12 22C12 16.4772 7.52285 12 2 12C7.52285 12 12 7.52285 12 2Z" fill="currentColor"/>
               </svg>
               <span className="truncate">{modelLabels[modelName] || modelName}</span>
@@ -386,25 +389,25 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               <button
                 type="button"
                 onClick={() => setRoleDropdownOpen(prev => !prev)}
-                className="flex items-center justify-between gap-1 w-[135px] h-[23px] px-2 text-[9.5px] font-semibold text-slate-800 rounded-[5px] bg-[#f4f3f0] border border-slate-300 hover:bg-[#ecebea] transition-all cursor-pointer text-left shadow-none"
+                className="flex items-center justify-between gap-1 w-[105px] md:w-[135px] h-[20px] md:h-[23px] px-1.5 md:px-2 text-[8px] md:text-[9.5px] font-semibold text-slate-800 rounded-[4px] md:rounded-[5px] bg-[#f4f3f0] border border-slate-300 hover:bg-[#ecebea] transition-all cursor-pointer text-left shadow-none"
               >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {roleIcons[currentRole || 'general']}
+                <div className="flex items-center gap-1 min-w-0">
+                  {React.cloneElement(roleIcons[currentRole || 'general'] as React.ReactElement<any>, { className: "w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 text-slate-700" })}
                   <span className="truncate">{roleLabels[currentRole || 'general']}</span>
                 </div>
-                <ChevronDown className={`w-2.5 h-2.5 text-slate-500 transition-transform duration-200 ${roleDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-2 md:w-2.5 h-2 md:h-2.5 text-slate-500 transition-transform duration-200 ${roleDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {roleDropdownOpen && (
-                <div className="absolute left-0 bottom-full mb-1.5 w-[135px] bg-white border border-slate-300 rounded-[5px] py-1 z-50 shadow-none">
+                <div className="absolute left-0 bottom-full mb-1.5 w-[105px] md:w-[135px] bg-white border border-slate-300 rounded-[5px] py-1 z-50 shadow-none">
                   {Object.entries(roleLabels).map(([key, val]) => (
                     <button
                       key={key}
                       type="button"
                       onClick={() => { onUpdateRole(key); setRoleDropdownOpen(false); }}
-                      className="w-full text-left px-2 py-1 text-[9.5px] font-semibold text-slate-800 hover:bg-[#f4f3f0] hover:text-slate-950 transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="w-full text-left px-2 py-1 text-[8.5px] md:text-[9.5px] font-semibold text-slate-800 hover:bg-[#f4f3f0] hover:text-slate-955 transition-colors cursor-pointer flex items-center gap-1"
                     >
-                      {roleIcons[key]}
+                      {React.cloneElement(roleIcons[key] as React.ReactElement<any>, { className: "w-2.5 h-2.5 md:w-3 md:h-3 shrink-0 text-slate-700" })}
                       <span className="truncate">{val}</span>
                     </button>
                   ))}
@@ -416,26 +419,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
         {/* Attachment previews */}
         {attachments.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2 p-2 bg-[#fbfbfa] border border-slate-300 rounded-[10px] max-h-24 overflow-y-auto scrollbar-thin">
+          <div className="flex flex-wrap gap-1.5 mb-1.5 p-1.5 bg-[#fbfbfa] border border-slate-300 rounded-[8px] max-h-20 overflow-y-auto scrollbar-thin">
             {attachments.map((att) => (
               <div
                 key={att.id}
-                className="flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-[6px] bg-white border border-slate-200 text-[9.5px] text-slate-800 font-medium shadow-[0_1px_2px_rgba(0,0,0,0.01)] transition-all hover:shadow-sm"
+                className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-[5px] bg-white border border-slate-200 text-[8.5px] md:text-[9.5px] text-slate-800 font-medium shadow-[0_1px_2px_rgba(0,0,0,0.01)] transition-all hover:shadow-sm"
               >
                 {att.type === 'image' && att.dataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={att.dataUrl} className="w-4 h-4 object-cover rounded-[3px] border border-slate-100" alt="Preview" />
+                  <img src={att.dataUrl} className="w-3.5 h-3.5 object-cover rounded-[2px] border border-slate-100" alt="Preview" />
                 ) : (
-                  <FileText className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+                  <FileText className="w-3 h-3 text-slate-700 shrink-0" />
                 )}
-                <span className="max-w-[130px] truncate text-[10px] text-slate-800">{att.name}</span>
-                <span className="text-[8px] text-slate-700 font-mono">({att.size})</span>
+                <span className="max-w-[100px] md:max-w-[130px] truncate text-[9px] md:text-[10px] text-slate-800">{att.name}</span>
+                <span className="text-[7.5px] md:text-[8px] text-slate-700 font-mono">({att.size})</span>
                 <button
                   onClick={() => removeAttachment(att.id)}
                   className="p-0.5 rounded-full hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-colors cursor-pointer"
                   title="Remove Attachment"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-2.5 h-2.5" />
                 </button>
               </div>
             ))}
@@ -443,14 +446,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         )}
 
         {/* Input wrapper */}
-        <div className="relative flex items-end gap-1.5 bg-white border border-slate-300 hover:border-slate-400 focus-within:border-slate-500 rounded-[20px] p-1.5 pl-3 pr-2 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] focus-within:shadow-[0_4px_12px_rgba(0,0,0,0.04)] min-h-[42px]">
+        <div className="relative flex items-end gap-1 md:gap-1.5 bg-white border border-slate-300 hover:border-slate-400 focus-within:border-slate-500 rounded-[18px] md:rounded-[20px] p-1 md:p-1.5 pl-2.5 md:pl-3 pr-1.5 md:pr-2 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] focus-within:shadow-[0_4px_12px_rgba(0,0,0,0.04)] min-h-[34px] md:min-h-[42px]">
 
           {/* Attach button */}
           <label
-            className="p-1.5 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 select-none mb-0.5"
+            className="p-1 md:p-1.5 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 select-none mb-0 md:mb-0.5"
             title="Upload files"
           >
-            <Paperclip className="w-3.5 h-3.5" />
+            <Paperclip className="w-3 h-3 md:w-3.5 md:h-3.5" />
             <input ref={fileInputRef} type="file" multiple onChange={handleFileSelect} className="hidden" />
           </label>
 
@@ -467,10 +470,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 onPaste={handlePaste}
                 disabled={disabled}
                 placeholder=""
-                className="flex-1 w-full resize-none bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none text-[12.5px] py-1.5 px-0.5 max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[20px]"
+                className="flex-1 w-full resize-none bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none text-[14px] md:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px]"
               />
               {/* Live interim text shown below typed text */}
-              <span className="absolute left-0.5 top-1.5 text-[12.5px] leading-relaxed text-slate-400 italic pointer-events-none select-none">
+              <span className="absolute left-0.5 top-1 md:top-1.5 text-[14px] md:text-[12.5px] leading-relaxed text-slate-400 italic pointer-events-none select-none">
                 {text ? '' : interimTranscript}
               </span>
             </div>
@@ -487,10 +490,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 isListening
                   ? 'Listening…'
                   : disabled
-                  ? 'Waiting for response...'
+                  ? 'Waiting...'
                   : 'Ask MentorAI anything...'
               }
-              className="flex-1 resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none text-[12.5px] py-1.5 px-0.5 max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[20px] italic-placeholder"
+              className="flex-1 resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none text-[14px] md:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px] italic-placeholder"
             />
           )}
 
@@ -499,14 +502,14 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <button
             type="button"
             onClick={handleMicClick}
-            className={`group/mic p-1.5 transition-colors cursor-pointer shrink-0 mb-0.5 rounded-full ${
+            className={`group/mic p-1 md:p-1.5 transition-colors cursor-pointer shrink-0 mb-0 md:mb-0.5 rounded-full ${
               isListening
                 ? 'text-rose-500 animate-pulse'
                 : 'text-black hover:text-blue-600'
             }`}
             title={isListening ? 'Stop recording' : 'Voice input'}
           >
-            <MicIcon recording={isListening} className="w-[18px] h-[18px]" />
+            <MicIcon recording={isListening} className="w-[15px] h-[15px] md:w-[18px] md:h-[18px]" />
           </button>
 
           {/* Send / Stop button — 3 states:
@@ -520,12 +523,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               handleSubmit();
             }}
             disabled={disabled && !isListening}
-            className="group/send p-1 transition-all cursor-pointer shrink-0 mb-0.5 rounded-full"
+            className="group/send p-0.5 md:p-1 transition-all cursor-pointer shrink-0 mb-0 md:mb-0.5 rounded-full"
             title={disabled ? 'Generating...' : 'Send Message'}
           >
             {disabled ? (
               /* ── Generating state: spinning ring + stop square ── */
-              <span className="relative flex items-center justify-center w-[18px] h-[18px]">
+              <span className="relative flex items-center justify-center w-[15px] h-[15px] md:w-[18px] md:h-[18px]">
                 {/* Spinning arc */}
                 <svg
                   className="absolute inset-0 w-full h-full animate-spin"
@@ -546,16 +549,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   />
                 </svg>
                 {/* Stop square in center */}
-                <span className="w-[7px] h-[7px] rounded-[1.5px] bg-slate-900" />
+                <span className="w-[5.5px] md:w-[7px] h-[5.5px] md:h-[7px] rounded-[1px] md:rounded-[1.5px] bg-slate-900" />
               </span>
             ) : (
-              /* ── Send arrow: outlined black → filled black on hover ── */
+              /* ── Send arrow: outlined pure black ── */
               <svg
-                className="w-[18px] h-[18px]"
+                className="w-[15px] h-[15px] md:w-[18px] md:h-[18px]"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                {/* Outlined pure black — no divider line, always visible */}
                 <g className="group-hover/send:hidden">
                   <path
                     d="M22 2L15 22L11 13L2 9L22 2Z"
@@ -563,7 +565,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none"
                   />
                 </g>
-                {/* Filled black — visible on hover */}
                 <path
                   className="hidden group-hover/send:block"
                   d="M22 2L15 22L11 13L2 9L22 2Z"

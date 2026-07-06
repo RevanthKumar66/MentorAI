@@ -286,8 +286,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEditMessage
     // User message: Aligned to the right, rounded grey bubble
     return (
       <div className="w-full flex flex-col items-end group/msg">
-        <div className="flex items-end gap-2 max-w-[75%]">
-          <div className="bg-[#ecebea] text-[#1f1f1f] text-[13px] px-4 py-2.5 rounded-[20px] rounded-br-[4px] border border-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] leading-relaxed whitespace-pre-wrap">
+        <div className="flex items-end gap-2 max-w-[88%] md:max-w-[75%]">
+          <div className="bg-[#ecebea] text-[#1f1f1f] text-[13px] px-3.5 md:px-4 py-2 md:py-2.5 rounded-[18px] md:rounded-[20px] rounded-br-[4px] border border-slate-300 shadow-[0_1px_2px_rgba(0,0,0,0.02)] leading-relaxed whitespace-pre-wrap">
             {isEditing ? (
               <div className="flex flex-col gap-2 min-w-[240px]">
                 <textarea
@@ -355,10 +355,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEditMessage
 
   // Assistant message: Aligned to the left, plain text, with action buttons below
   return (
-    <div className="w-full flex gap-4 py-4 group/msg text-left">
+    <div className="w-full flex gap-2.5 md:gap-4 py-2.5 md:py-4 group/msg text-left">
       {/* Avatar Icon */}
-      <div className="w-8 h-8 rounded-full bg-transparent border border-slate-350 flex items-center justify-center shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.01)] select-none">
-        <Image src="/mentorai-symbol-only.svg" alt="MentorAI" width={20} height={20} className="w-5 h-5" />
+      <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-transparent border border-slate-350 flex items-center justify-center shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.01)] select-none">
+        <Image src="/mentorai-symbol-only.svg" alt="MentorAI" width={18} height={18} className="w-4 h-4 md:w-5 md:h-5" />
       </div>
 
       {/* Message Content */}

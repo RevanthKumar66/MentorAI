@@ -301,7 +301,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       </header>
 
       {/* ── Messages Scroll Area ────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin bg-transparent">
+      <div className="flex-1 overflow-y-auto px-3 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6 scrollbar-thin bg-transparent">
         {loading ? (
           <div className="h-full flex items-center justify-center text-slate-700">
             <div className="flex flex-col items-center gap-2">
@@ -550,7 +550,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           )
         ) : (
           // Messages Listing
-          <div className="max-w-3xl mx-auto w-full space-y-6">
+          <div className="max-w-3xl mx-auto w-full space-y-4 md:space-y-6">
             {messages.map((message) => (
               <ChatMessage 
                 key={message.id} 
