@@ -317,7 +317,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 <Image src="/mentorai-symbol-only.svg" alt="MentorAI Symbol" width={44} height={44} />
               </div>
 
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight sm:text-2xl">
+              <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight px-4 truncate max-w-full">
                 Workspace: {workspaceDetails?.name || 'Knowledge Workspace'}
               </h1>
               
@@ -327,7 +327,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 <div>Notes: <span className="font-mono text-slate-900">{workspaceNotes?.length || 0}</span></div>
               </div>
 
-              <p className="text-slate-750 max-w-sm mt-3 text-xs leading-relaxed">
+              <p className="text-slate-750 max-w-xs md:max-w-sm mt-3 text-[11px] md:text-xs leading-relaxed text-justify px-4">
                 {workspaceDetails?.description || 'This workspace is isolated. AI query RAG is restricted only to files linked to this project.'}
               </p>
 
@@ -378,12 +378,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 <Image src="/mentorai-symbol-only.svg" alt="MentorAI Symbol" width={40} height={40} />
               </div>
 
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight sm:text-2xl">
+              <h1 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
                 Welcome to MentorAI OS
               </h1>
 
-              <p className="text-slate-700 max-w-md mt-1 text-[11.5px] leading-relaxed">
-                Your personalized AI learning and productivity workspace. Choose a project workspace below to access RAG context, or launch a specialized AI Mentor.
+              <p className="text-slate-700 max-w-xs md:max-w-md mt-1.5 text-[11px] md:text-[11.5px] leading-relaxed text-justify px-4">
+                Your personal AI workspace. Select a workspace below to access context, or launch an AI Mentor.
               </p>
 
               {/* Choose Your Workspace Launcher Cards */}
