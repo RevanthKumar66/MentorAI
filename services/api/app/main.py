@@ -51,9 +51,26 @@ else:
         "https://mentor-ai-web.vercel.app",
     ]
 
+# Regex pattern to match:
+# 1. Vercel deployment/preview subdomains: https://*.vercel.app
+# 2. Localhost and loopback IPs (with optional port): http(s)://localhost(:port), http(s)://127.0.0.1(:port)
+# 3. Local network IPs for mobile testing: http(s)://192.168.x.x(:port), http(s)://10.x.x.x(:port), http(s)://172.16-31.x.x(:port)
+# 4. Mobile app schemes: capacitor://localhost, ionic://localhost
+origin_regex = (
+    r"https://.*\.vercel\.app|"
+    r"https?://localhost(:\d+)?|"
+    r"https?://127\.0\.0\.1(:\d+)?|"
+    r"https?://192\.168\.\d+\.\d+(:\d+)?|"
+    r"https?://10\.\d+\.\d+\.\d+(:\d+)?|"
+    r"https?://172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+(:\d+)?|"
+    r"capacitor://.*|"
+    r"ionic://.*"
+)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

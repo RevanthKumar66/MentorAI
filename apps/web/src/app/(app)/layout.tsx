@@ -18,7 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen justify-center items-center bg-[#fcfbf9] text-slate-800">
+      <div className="flex h-[100dvh] w-screen justify-center items-center bg-[#fcfbf9] text-slate-800">
         <div className="flex flex-col items-center gap-2">
           <span className="w-6 h-6 rounded-full border-2 border-slate-200 border-t-slate-900 animate-spin" />
           <p className="text-slate-500 text-xs mt-2 font-medium">Launching Momentum AI...</p>
@@ -80,7 +80,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const isMentorWorkspace = pathname?.startsWith('/mentors') || pathname?.startsWith('/lifesaver');
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white text-slate-800">
+    <div className="flex h-[100dvh] w-screen overflow-hidden bg-white text-slate-800">
       {!isMentorWorkspace && (
         <ChatSidebar
           sessions={sessions}

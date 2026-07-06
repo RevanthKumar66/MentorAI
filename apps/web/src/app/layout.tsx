@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -24,6 +24,20 @@ export const metadata: Metadata = {
     shortcut: "/mentorai-favicon-white.ico",
     apple: "/mentorai-favicon-white.ico",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'MentorAI OS',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#f9f9f8',
 };
 
 export default function RootLayout({

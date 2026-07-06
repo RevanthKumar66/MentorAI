@@ -36,8 +36,10 @@
 /* Base resets & typography */
 html, body {
   height: 100%;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
+  overscroll-behavior: none;
 }
 
 body {
@@ -47,6 +49,21 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent tap highlight flash on iOS */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent text size adjustment on iOS after orientation change */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevent iOS Safari from zooming into inputs (needs 16px+ font size) */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
+/* Full dynamic viewport height safe area for mobile chat containers */
+.h-dvh-safe {
+  height: 100dvh;
+  height: calc(var(--dvh, 1dvh) * 100);
 }
 
 /* Custom minimal scrollbar utility to avoid heavy browser defaults */
