@@ -7,8 +7,9 @@ import Link from 'next/link';
 import {
   Save, Check, Shield, Sliders, Cpu, Bell, CheckSquare, Sparkles
 } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 async function getHeaders() {
   const { data } = await supabase.auth.getSession();

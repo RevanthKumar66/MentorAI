@@ -8,16 +8,38 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // 1. Check if session is already active/available
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         router.push('/chat');
-      } else {
-        router.push('/login');
       }
-    };
+    });
 
-    handleAuthCallback();
+    // 2. Listen to state changes to capture when the SDK successfully parses the OAuth hash
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        router.push('/chat');
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        // Allow a small delay for hash parsing. If no token or error present, redirect to login.
+        const timer = setTimeout(() => {
+          const hash = window.location.hash || '';
+          if (!hash.includes('access_token') && !hash.includes('error')) {
+            router.push('/login');
+          }
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    });
+
+    // 3. Absolute fallback timeout to prevent infinite spinner
+    const fallbackTimer = setTimeout(() => {
+      router.push('/login');
+    }, 8000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(fallbackTimer);
+    };
   }, [router]);
 
   return (

@@ -7,8 +7,9 @@ import { Milestone } from '../types/planner';
 import { GoalRisk } from '../types/risk';
 import { ExecutionAnalysisResponse, RescheduleSuggestion } from '../types/execution';
 import { resolveUserName } from './MissionGenerationService';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export class ExecutionAgentService {
   private async getHeaders(): Promise<Record<string, string>> {

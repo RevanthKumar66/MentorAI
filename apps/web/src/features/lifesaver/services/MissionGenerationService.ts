@@ -3,8 +3,9 @@ import { FocusAIResponse, ScoredTask, TaskScoreMap } from '../types/focus';
 import { Task } from '../types/task';
 import { Goal } from '../types/goal';
 import { Milestone } from '../types/planner';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 /** Resolve the user's display name from their auth metadata. */
 export function resolveUserName(user: {

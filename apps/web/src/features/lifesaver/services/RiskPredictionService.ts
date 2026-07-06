@@ -6,8 +6,9 @@ import { Goal } from '../types/goal';
 import { Task } from '../types/task';
 import { Milestone } from '../types/planner';
 import { resolveUserName } from './MissionGenerationService';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export class RiskPredictionService {
   private async getHeaders(): Promise<Record<string, string>> {

@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import { goalPlanningRepository } from '../repositories/GoalPlanningRepository';
 import { AIGoalPlanResponse, GoalPlan, Milestone, Recommendation } from '../types/planner';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export class GoalPlanningService {
   private async getHeaders() {

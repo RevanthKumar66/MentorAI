@@ -12,8 +12,9 @@ import {
 import { goalService } from '@/features/lifesaver/services/GoalService';
 import { taskService } from '@/features/lifesaver/services/TaskService';
 import { riskPredictionService } from '@/features/lifesaver/services/RiskPredictionService';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 async function getHeaders() {
   const { data } = await supabase.auth.getSession();

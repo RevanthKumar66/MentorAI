@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import { schedulingRepository } from '../repositories/SchedulingRepository';
 import { CalendarConnection, CalendarEvent } from '../types/scheduling';
+import { getApiBaseUrl } from '@/lib/api-config';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/v1';
+const API_BASE_URL = getApiBaseUrl();
 
 export class CalendarIntegrationService {
   private async getHeaders() {
