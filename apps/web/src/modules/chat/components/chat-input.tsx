@@ -446,11 +446,11 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         )}
 
         {/* Input wrapper */}
-        <div className="relative flex items-end gap-1 md:gap-1.5 bg-white border border-slate-300 hover:border-slate-400 focus-within:border-slate-500 rounded-[18px] md:rounded-[20px] p-1 md:p-1.5 pl-2.5 md:pl-3 pr-1.5 md:pr-2 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] focus-within:shadow-[0_4px_12px_rgba(0,0,0,0.04)] min-h-[34px] md:min-h-[42px]">
+        <div className="relative flex items-center md:items-end gap-1 md:gap-1.5 bg-white border border-slate-300 hover:border-slate-400 focus-within:border-slate-500 rounded-[18px] md:rounded-[20px] p-1 md:p-1.5 pl-2.5 md:pl-3 pr-1.5 md:pr-2 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.02)] focus-within:shadow-[0_4px_12px_rgba(0,0,0,0.04)] min-h-[34px] md:min-h-[42px]">
 
           {/* Attach button */}
           <label
-            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 select-none mb-0.5"
+            className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 select-none mb-0 md:mb-0.5"
             title="Upload files"
           >
             <Paperclip className="w-3.5 h-3.5" />
@@ -470,10 +470,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 onPaste={handlePaste}
                 disabled={disabled}
                 placeholder=""
-                className="flex-1 w-full resize-none bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none text-[13.5px] md:text-[12.5px] placeholder:text-[11px] md:placeholder:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px]"
+                className="flex-1 w-full resize-none bg-transparent text-slate-800 placeholder-slate-500 focus:outline-none text-[12.5px] placeholder:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px]"
               />
               {/* Live interim text shown below typed text */}
-              <span className="absolute left-0.5 top-1 md:top-1.5 text-[13.5px] md:text-[12.5px] leading-relaxed text-slate-400 italic pointer-events-none select-none">
+              <span className="absolute left-0.5 top-1 md:top-1.5 text-[12.5px] leading-relaxed text-slate-400 italic pointer-events-none select-none">
                 {text ? '' : interimTranscript}
               </span>
             </div>
@@ -493,7 +493,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   ? 'Waiting...'
                   : 'Ask MentorAI anything...'
               }
-              className="flex-1 resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none text-[13.5px] md:text-[12.5px] placeholder:text-[11px] md:placeholder:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px] italic-placeholder"
+              className="flex-1 resize-none bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none text-[12.5px] placeholder:text-[12.5px] py-1 md:py-1.5 px-0.5 max-h-[120px] md:max-h-[160px] leading-relaxed scrollbar-thin overflow-y-hidden min-h-[18px] md:min-h-[20px] italic-placeholder"
             />
           )}
 

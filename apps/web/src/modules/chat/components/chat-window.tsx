@@ -327,7 +327,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 <div>Notes: <span className="font-mono text-slate-900">{workspaceNotes?.length || 0}</span></div>
               </div>
 
-              <p className="text-slate-750 max-w-xs md:max-w-sm mt-3 text-[11px] md:text-xs leading-relaxed text-justify px-4">
+              <p className="text-slate-750 max-w-xs md:max-w-sm mt-3 text-[11px] md:text-xs leading-relaxed text-center px-4">
                 {workspaceDetails?.description || 'This workspace is isolated. AI query RAG is restricted only to files linked to this project.'}
               </p>
 
@@ -382,8 +382,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 Welcome to MentorAI OS
               </h1>
 
-              <p className="text-slate-700 max-w-xs md:max-w-md mt-1.5 text-[11px] md:text-[11.5px] leading-relaxed text-justify px-4">
-                Your personal AI workspace. Select a workspace below to access context, or launch an AI Mentor.
+              <p className="text-slate-700 max-w-xs md:max-w-md mt-1.5 text-[11px] md:text-[11.5px] leading-relaxed text-center px-4">
+                Your personal AI workspace. Select a workspace below or launch an AI Mentor.
               </p>
 
               {/* Choose Your Workspace Launcher Cards */}
@@ -399,10 +399,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         setActiveWorkspaceId(col.id);
                         router.push(`/workspaces/${col.id}`);
                       }}
-                      className="group p-4 bg-white hover:bg-[#fcfbf9] border border-slate-200 rounded-[10px] cursor-pointer transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[110px]"
+                      className="group p-2.5 md:p-4 bg-white hover:bg-[#fcfbf9] border border-slate-200 rounded-[10px] cursor-pointer transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[60px] md:min-h-[110px]"
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-1 md:mb-2">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: col.color || '#64748B' }} />
                             <h3 className="font-semibold text-slate-850 text-[11.5px] group-hover:text-slate-955 truncate">
@@ -411,11 +411,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                           </div>
                           <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-slate-800 shrink-0" />
                         </div>
-                        <p className="text-[10px] text-slate-700 line-clamp-2 leading-relaxed mb-3">
+                        <p className="hidden md:block text-[10px] text-slate-700 line-clamp-2 leading-relaxed mb-3">
                           {col.description || 'Personal workspace for organizing documents and chat context.'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 text-[9.5px] font-medium text-slate-800 border-t border-slate-100 pt-2 shrink-0">
+                      <div className="flex items-center gap-2 text-[9.5px] font-medium text-slate-800 border-t border-slate-100 pt-1.5 md:pt-2 shrink-0">
                         <span>{col.document_count || 0} Files</span>
                         <span className="w-1 h-1 rounded-full bg-slate-350" />
                         <span>Knowledge Context</span>
@@ -428,13 +428,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     onClick={() => {
                       router.push('/documents');
                     }}
-                    className="group p-4 bg-white hover:bg-[#fcfbf9] border border-dashed border-slate-300 rounded-[10px] cursor-pointer flex flex-col justify-center items-center transition-all min-h-[110px] text-center"
+                    className="group p-2.5 md:p-4 bg-white hover:bg-[#fcfbf9] border border-dashed border-slate-300 rounded-[10px] cursor-pointer flex flex-col justify-center items-center transition-all min-h-[60px] md:min-h-[110px] text-center"
                   >
                     <Plus className="w-4 h-4 text-slate-750 mb-1" />
                     <span className="text-[11px] font-semibold text-slate-900 group-hover:text-slate-955">
                       New Workspace
                     </span>
-                    <span className="text-[9.5px] text-slate-700 mt-0.5">
+                    <span className="hidden md:block text-[9.5px] text-slate-700 mt-0.5">
                       Create workspace in File Explorer
                     </span>
                   </div>
@@ -530,16 +530,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                           });
                         }
                       }}
-                      className="group p-4 bg-white hover:bg-[#fcfbf9] border border-slate-200 rounded-[10px] cursor-pointer transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-start min-h-[110px]"
+                      className="group p-2.5 md:p-4 bg-white hover:bg-[#fcfbf9] border border-slate-200 rounded-[10px] cursor-pointer transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col justify-start min-h-[60px] md:min-h-[110px]"
                     >
-                      <div className="w-7 h-7 rounded-[6px] bg-[#f4f3f0] border border-slate-200 flex items-center justify-center mb-3 shrink-0">
-                        {mentor.icon}
+                      <div className="flex items-center gap-2 mb-0 md:mb-3">
+                        <div className="w-6 h-6 md:w-7 md:h-7 rounded-[6px] bg-[#f4f3f0] border border-slate-200 flex items-center justify-center shrink-0">
+                          {mentor.icon}
+                        </div>
+                        <h3 className="font-semibold text-slate-850 text-[11.5px] group-hover:text-slate-955 flex items-center gap-1">
+                          {mentor.title}
+                          <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-slate-800 shrink-0" />
+                        </h3>
                       </div>
-                      <h3 className="font-semibold text-slate-850 text-[11.5px] group-hover:text-slate-955 flex items-center gap-1">
-                        {mentor.title}
-                        <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-slate-800 shrink-0" />
-                      </h3>
-                      <p className="text-[10px] text-slate-700 mt-1 leading-normal">
+                      <p className="hidden md:block text-[10px] text-slate-700 mt-1 leading-normal">
                         {mentor.desc}
                       </p>
                     </div>
