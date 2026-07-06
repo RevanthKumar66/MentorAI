@@ -40,16 +40,37 @@ app = FastAPI(
 
 # CORS configurations
 import os
+
+origins = []
+
+# 1. Parse ALLOWED_ORIGINS (comma-separated env)
 origins_env = os.getenv("ALLOWED_ORIGINS", "")
 if origins_env:
-    origins = [o.strip() for o in origins_env.split(",") if o.strip()]
-else:
-    origins = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://mentor-ai-web-chi.vercel.app",
-        "https://mentor-ai-web.vercel.app",
-    ]
+    origins.extend([o.strip() for o in origins_env.split(",") if o.strip()])
+
+# 2. Add settings.NEXT_PUBLIC_APP_URL
+if hasattr(settings, "NEXT_PUBLIC_APP_URL") and settings.NEXT_PUBLIC_APP_URL:
+    origins.append(settings.NEXT_PUBLIC_APP_URL.strip())
+
+# 3. Add other common frontend environment variable keys
+for env_var in ["FRONTEND_URL", "APP_URL", "NEXT_PUBLIC_API_URL"]:
+    val = os.getenv(env_var)
+    if val:
+        origins.append(val.strip())
+
+# 4. Add fallback defaults if they aren't already included
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://mentor-ai-web-chi.vercel.app",
+    "https://mentor-ai-web.vercel.app",
+]
+for default_o in default_origins:
+    if default_o not in origins:
+        origins.append(default_o)
+
+# 5. Clean up origins by stripping any trailing slashes to guarantee exact matches
+origins = [o.rstrip("/") for o in origins if o]
 
 # Regex pattern to match:
 # 1. Vercel deployment/preview subdomains: https://*.vercel.app
